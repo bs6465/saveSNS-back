@@ -39,13 +39,6 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE_NAME }}:${{ github.sha }}
-
       # [수정] 2. 백엔드 쪽 파일이 변했을 때만('true') 실행
       - name: Build Backend
         if: steps.changes.outputs.backend == 'true'
