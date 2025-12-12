@@ -35,6 +35,8 @@ spec:
       labels:
         app: api-backend
     spec:
+      imagePullSecrets:
+        - name: backend-secret
       containers:
         - name: api-server
           # [수정 필요] 본인의 Docker Hub 이미지 주소로 변경하세요!
