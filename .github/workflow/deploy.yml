@@ -2,18 +2,18 @@ name: Build and Deploy
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
     paths-ignore: # k8s 폴더가 변경될 때는 이 액션을 실행하지 않음 (무한루프 방지)
-      - 'k8s/**'
+      - "k8s/**"
 
 env:
-  IMAGE_NAME: saveSNS-back
+  IMAGE_NAME: saveSNS-backend_image
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions: # 같은 레포에 푸시하려면 쓰기 권한 필요
-      contents: write 
+      contents: write
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -37,10 +37,10 @@ jobs:
         run: |
           # 현재 폴더에 이미 k8s/deployment.yaml이 있음
           sed -i 's|image: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:.*|image: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}|' k8s/deployment.yaml
-          
-          git config --global user.email "github-actions@github.com"
-          git config --global user.name "GitHub Actions"
-          
+
+          git config --global user.email "qaplazlm41@gmail.com"
+          git config --global user.name "bs6465"
+
           # [skip ci]를 붙여서 무한루프를 한 번 더 방지
           git commit -am "Update image tag to ${{ github.sha }} [skip ci]"
           git push

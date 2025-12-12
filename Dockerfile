@@ -20,4 +20,4 @@ COPY . .
 EXPOSE 3000
 
 # 컨테이너 실행 명령어
-CMD ["node", "index.js"]
+CMD ["node", "src/index.js"]

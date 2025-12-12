@@ -1,0 +1,138 @@
+# API 서버용 서비스 (외부 노출용)
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-service
+spec:
+  # 외부에서 접속해야 하므로 NodePort 사용
+  # (나중에 Ingress 붙이면 ClusterIP로 변경)
+  type: NodePort
+  selector:
+    app: api-backend
+  ports:
+    - port: 80 # 내부끼리 통신할 서비스 포트 (들어오는 문)
+      targetPort: 3000 # 타겟 포트 (Node.js 포트)
+      nodePort: 30000 # 실제로 외부에서 접근할 포트 (30000~32767 사이)
+
+  # [Socket.io 팁]
+  # 연결이 끊기지 않게 동일한 사용자는 동일한 파드로 계속 보내줌 (Sticky Session)
+  sessionAffinity: ClientIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-backend
+  labels:
+    app: api-backend
+spec:
+  replicas: 2 # 기본 2개로 시작 (고가용성)
+  selector:
+    matchLabels:
+      app: api-backend
+  template:
+    metadata:
+      labels:
+        app: api-backend
+    spec:
+      containers:
+        - name: api-server
+          # [수정 필요] 본인의 Docker Hub 이미지 주소로 변경하세요!
+          image: bs6465/saveSNS-backend_image:latest
+
+          # Always: 파드가 뜰 때마다 Docker Hub 확인 (최신 버전 유지에 좋음)
+          # IfNotPresent: 없으면 받고, 있으면 그냥 씀 (데이터 절약)
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 3000 # Node.js 기본 포트
+
+          # [중요] 아까 만든 설정들 여기서 다 가져옵니다.
+          env:
+            # 1. ConfigMap 전체를 한방에 로드 (변수명이 똑같다면 이게 편함)
+            - envFrom:
+                - configMapRef:
+                    name: backend-config
+
+            # 2. Secret에서 민감한 정보 개별 로드
+            # 사용자 아이디 (Secret의 DB_USER와 연결)
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: DB_USER
+            # 비밀번호는 Secret에서 가져옴
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: DB_PASSWORD
+            - name: REDIS_PASS # Redis 접속용 비밀번호 환경변수
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: REDIS_PASSWORD
+
+          # [HPA 필수 조건]
+          # requests가 없으면 HPA가 기준을 못 잡아서 작동 안 함!
+          resources:
+            requests:
+              # 최소한 이정도 리소스는 할당받고 있어라!
+              memory: "128Mi"
+              cpu: "100m" # 0.1 코어
+            limits:
+              # 이 한계가 넘으면 클라우드 버스팅을 해라!
+              memory: "512Mi" # 아무리 많이 써도 512MB 넘으면 이 파드만 죽여(재시작) (노드는 살리고)
+              cpu: "500m" # 0.5 코어 = HPA CPU 50% 라는 뜻
+
+          # [안정성] 서버가 진짜 켜졌는지 확인 (Health Check)
+          readinessProbe:
+            httpGet:
+              path: / # 혹은 /health 같은 헬스체크용 API 경로
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+
+      # [추가] "홈 서버를 편애하라"는 설정
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100 # 점수 높음 (가장 선호)
+              preference:
+                matchExpressions:
+                  - key: node-type
+                    operator: NotIn
+                    values:
+                      - cloud-worker # 클라우드 워커가 '아닌' 곳을 선호해라 (즉, 홈서버)
+
+      # [핵심 2] "나는 cloud-node라는 출입 금지(Taint)를 무시할 수 있어"
+      tolerations:
+        - key: "cloud-node"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-backend-hpa
+spec:
+  # 누구를 조절할 것인가? (아까 만든 Deployment)
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api-backend
+
+  # 최소/최대 파드 개수
+  minReplicas: 2 # 평소에는 2개 유지
+  maxReplicas: 10 # 아무리 바빠도 10개까지만 늘림 (비용 방지)
+
+  # 늘리는 기준 (Metric)
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50 # 평균 CPU 사용량이 50%를 넘으면 파드 추가!
