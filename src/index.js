@@ -6,7 +6,7 @@ const http = require('http');
 // const { initSocketIO } = require('./websocket'); // 웹소켓 핸들러 가져오기
 const app = express();
 const port = 3000;
-
+  
 // 1. 전역 미들웨어 설정
 // app.use(cors());
 app.use(express.json()); // JSON 파싱
