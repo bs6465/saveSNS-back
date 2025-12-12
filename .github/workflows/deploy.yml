@@ -2,12 +2,12 @@ name: Build and Deploy
 
 on:
   push:
-    branches: ["main"]
+    branches: ['main']
     paths-ignore: # k8s 폴더가 변경될 때는 이 액션을 실행하지 않음 (무한루프 방지)
-      - "k8s/**"
+      - 'k8s/**'
 
 env:
-  IMAGE_NAME: saveSNS-backend_image
+  IMAGE_NAME: savesns-backend_image
 
 jobs:
   build-and-deploy:
