@@ -18,7 +18,7 @@ spec:
         spec:
           containers:
             - name: data-updater
-              image: bs6465/savesns-script-getweather:277b6e27e8d77001f3a0028d25df7f2afd51f6d7
+              image: bs6465/savesns-script-getweather:85c914657f24b3901e8cd6021c715ae852ea7eed
               imagePullPolicy: Always
 
               # [실행 명령] 여기서 원하는 파이썬 파일을 실행합니다.
