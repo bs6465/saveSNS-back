@@ -5,7 +5,7 @@ const express = require('express');
 const http = require('http');
 // const { initSocketIO } = require('./websocket'); // 웹소켓 핸들러 가져오기
 const app = express();
-const port = 3000;  
+const port = 3000;
 
 // 1. 전역 미들웨어 설정
 // app.use(cors());
@@ -20,7 +20,6 @@ app.get('/', (req, res) => {
 // 모든 유저, 로그인, 회원가입 담당
 // const authRoutes = require('./routes/auth.routes');
 // app.use('/api/auth', authRoutes);
-
 
 // ------------------------------------
 // Express와 WebSocket 서버 통합
