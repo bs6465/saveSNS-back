@@ -18,7 +18,7 @@ spec:
         spec:
           containers:
             - name: data-updater
-              image: bs6465/savesns-getweather:latest
+              image: bs6465/savesns-script-getweather:latest
               imagePullPolicy: Always
 
               # [편의성] DB 접속 정보도 똑같이 가져옴 (코드 재사용)
