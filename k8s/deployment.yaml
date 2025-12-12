@@ -38,7 +38,7 @@ spec:
       containers:
         - name: api-server
           # [수정 필요] 본인의 Docker Hub 이미지 주소로 변경하세요!
-          image: bs6465/saveSNS-backend_image:latest
+          image: bs6465/savesns-backend_image:latest
 
           # Always: 파드가 뜰 때마다 Docker Hub 확인 (최신 버전 유지에 좋음)
           # IfNotPresent: 없으면 받고, 있으면 그냥 씀 (데이터 절약)
@@ -78,12 +78,12 @@ spec:
           resources:
             requests:
               # 최소한 이정도 리소스는 할당받고 있어라!
-              memory: "128Mi"
-              cpu: "100m" # 0.1 코어
+              memory: '128Mi'
+              cpu: '100m' # 0.1 코어
             limits:
               # 이 한계가 넘으면 클라우드 버스팅을 해라!
-              memory: "512Mi" # 아무리 많이 써도 512MB 넘으면 이 파드만 죽여(재시작) (노드는 살리고)
-              cpu: "500m" # 0.5 코어 = HPA CPU 50% 라는 뜻
+              memory: '512Mi' # 아무리 많이 써도 512MB 넘으면 이 파드만 죽여(재시작) (노드는 살리고)
+              cpu: '500m' # 0.5 코어 = HPA CPU 50% 라는 뜻
 
           # [안정성] 서버가 진짜 켜졌는지 확인 (Health Check)
           readinessProbe:
@@ -107,10 +107,10 @@ spec:
 
       # [핵심 2] "나는 cloud-node라는 출입 금지(Taint)를 무시할 수 있어"
       tolerations:
-        - key: "cloud-node"
-          operator: "Equal"
-          value: "true"
-          effect: "NoSchedule"
+        - key: 'cloud-node'
+          operator: 'Equal'
+          value: 'true'
+          effect: 'NoSchedule'
 
 ---
 apiVersion: autoscaling/v2
