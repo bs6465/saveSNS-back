@@ -49,13 +49,12 @@ spec:
           ports:
             - containerPort: 3000 # Node.js 기본 포트
 
-          # [중요] 아까 만든 설정들 여기서 다 가져옵니다.
-          env:
-            # 1. ConfigMap 전체를 한방에 로드 (변수명이 똑같다면 이게 편함)
-            - envFrom:
-                - configMapRef:
-                    name: backend-config
+          # 1. ConfigMap 전체를 한방에 로드 (변수명이 똑같다면 이게 편함)
+          envFrom:
+            - configMapRef:
+              name: backend-config
 
+          env:
             # 2. Secret에서 민감한 정보 개별 로드
             # 사용자 아이디 (Secret의 DB_USER와 연결)
             - name: DB_USER
