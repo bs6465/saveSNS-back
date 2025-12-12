@@ -27,6 +27,8 @@ metadata:
     app: api-backend
 spec:
   replicas: 2 # 기본 2개로 시작 (고가용성)
+  revisionHistoryLimit: 3 # 롤백용 이전 버전 기록 3개 보관
+
   selector:
     matchLabels:
       app: api-backend
