@@ -52,7 +52,7 @@ spec:
           # 1. ConfigMap 전체를 한방에 로드 (변수명이 똑같다면 이게 편함)
           envFrom:
             - configMapRef:
-              name: backend-config
+                name: backend-config
 
           env:
             # 2. Secret에서 민감한 정보 개별 로드
