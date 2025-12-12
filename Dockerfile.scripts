@@ -1,0 +1,14 @@
+# Dockerfile.scripts
+FROM python:3-slim
+
+WORKDIR /app
+
+# 라이브러리 설치
+COPY scripts/requirements.txt .
+RUN pip install -r requirements.txt
+
+# 스크립트 파일들 복사
+COPY scripts/ .
+
+# 기본 실행 명령어는 없음 (Kubernetes가 지정해서 실행할 거임)
+CMD ["python", "--version"]

@@ -1,0 +1,61 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: daily-data-updater
+spec:
+  # 스케줄 설정 (Crontab 문법)
+  # 예: 한국 시간 새벽 4시 (KST는 UTC+9 이므로, UTC 19:00 설정)
+  # 팁: K8S 클러스터 시간대가 UTC라면 19 0 * * * 로 해야 함.
+  schedule: '*/10 * * * *'
+
+  # 실패 시 재시도 기록 남길 개수
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: data-updater
+              image: bs6465/savesns-getweather:latest
+              imagePullPolicy: Always
+
+              # [편의성] DB 접속 정보도 똑같이 가져옴 (코드 재사용)
+              envFrom:
+                - configMapRef:
+                    name: backend-config
+
+              # [핵심] API 서버 주소와 인증 토큰 주입
+              env:
+                - name: WEATHER_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: WEATHER_API_KEY # Secret에 이 키 추가 필요!
+
+                - name: DB_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: DB_USER
+                - name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: DB_PASSWORD
+
+          # CronJob은 작업이 끝나면 죽어야 하므로 restartPolicy는 OnFailure나 Never
+          restartPolicy: OnFailure
+
+          # [추가] "홈 서버를 편애하라"는 설정
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100 # 점수 높음 (가장 선호)
+                  preference:
+                  matchExpressions:
+                    - key: node-type
+                      operator: NotIn
+                      values:
+                        - cloud-worker # 클라우드 워커가 '아닌' 곳을 선호해라 (즉, 홈서버)
