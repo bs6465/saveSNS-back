@@ -1,0 +1,25 @@
+{
+  "name": "back",
+  "version": "1.0.0",
+  "description": "saveSNS",
+  "homepage": "https://github.com/bs6465/saveSNS-back#readme",
+  "bugs": {
+    "url": "https://github.com/bs6465/saveSNS-back/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bs6465/saveSNS-back.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@prisma/client": "^7.1.0",
+    "express": "^5.2.1",
+    "http": "^0.0.1-security"
+  }
+}
