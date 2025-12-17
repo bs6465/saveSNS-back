@@ -1,0 +1,28 @@
+// DB 연결 설정 (자동으로 생성됨)
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ------------------------------------------------------
+// 여기서부터 테이블 정의 (User 모델 예시)
+// ------------------------------------------------------
+
+model User {
+  // id: 정수형, 기본키(PK), 자동 증가
+  userId    uuid        @id       @default(uuidv7())   @map("user_id)
+  username  String      @unique
+  password  String      
+  nickname  String
+  location  Geometry
+  nx        Int2
+  ny        Int2
+  createdAt DateTime    @default(now())
+  
+  @@map("users")
+}
+
+// ------------------------------------------------------

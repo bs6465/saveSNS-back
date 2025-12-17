@@ -5,7 +5,7 @@ function generateToken(user) {
   const payload = {
     userId: user.userId,
     username: user.username,
-    teamId: user.teamId,
+    nickname: user.nickname,
   };
 
   const secretKey = process.env.JWT_SECRET_KEY;

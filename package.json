@@ -19,7 +19,9 @@
   },
   "dependencies": {
     "@prisma/client": "^7.1.0",
+    "argon2": "^0.44.0",
     "express": "^5.2.1",
-    "http": "^0.0.1-security"
+    "http": "^0.0.1-security",
+    "jsonwebtoken": "^9.0.3"
   }
 }
