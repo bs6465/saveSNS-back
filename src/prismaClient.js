@@ -19,4 +19,4 @@ const adapter = new PrismaPg(pool);
 // 3. 어댑터를 꽂아서 PrismaClient 생성
 const prisma = new PrismaClient({ adapter });
 
-module.exports = prisma;
+export { prisma };

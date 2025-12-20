@@ -16,7 +16,8 @@ app.get('/', (req, res) => {
 // 2. 라우터(Routes) 임포트
 // '/auth'로 시작하는 모든 요청은 auth.routes.js 파일이 처리하도록 넘김
 // 모든 유저, 로그인, 회원가입 담당
-const authRoutes = require('./routes/auth.routes');
+// const authRoutes = require('./routes/auth.routes');
+import authRoutes from './routes/auth.routes.js';
 app.use('/api/auth', authRoutes);
 
 // // 팀

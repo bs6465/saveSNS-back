@@ -1,4 +1,4 @@
-import { jwt } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 // 토큰 생성 및 업데이트
 function generateToken(user) {
@@ -15,6 +15,6 @@ function generateToken(user) {
 }
 
 // 이 함수를 다른 파일에서 쓸 수 있도록 export 합니다.
-module.exports = {
+export default {
   generateToken,
 };

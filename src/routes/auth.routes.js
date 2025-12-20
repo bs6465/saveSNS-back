@@ -1,4 +1,4 @@
-import { express } from 'express';
+import express from 'express';
 const router = express.Router(); // express의 라우터 기능을 사용
 
 /*
@@ -6,7 +6,8 @@ const router = express.Router(); // express의 라우터 기능을 사용
 */
 
 // 1. 실제 로직이 담긴 '컨트롤러'를 임포트
-const authController = require('../controllers/auth.controller');
+// const authController = require('../controllers/auth.controller');
+import * as authController from '../controllers/auth.controller.js';
 // const { verifyToken, checkAuth } = require('../middleware/authMiddleware'); // 미들웨어 경로
 
 // 2. 경로와 컨트롤러 함수를 연결
@@ -25,7 +26,6 @@ const authController = require('../controllers/auth.controller');
 // // POST /users/login (로그인) -> authController.login 함수
 // router.post('/login', authController.login);
 
-
-
 // 3. 이 라우터를 밖으로 내보냅니다.
-module.exports = router;
+// module.exports = router; // CommonJS 방식
+export default router; // ES6 모듈 방식

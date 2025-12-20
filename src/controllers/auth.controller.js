@@ -1,7 +1,7 @@
 // auth.controller.js
-import { prisma } from '../prismaClient';
-import { auth } from '../utils/password.utils';
-import { jwttoken } from '../utils/jwttoken.utils';
+import { prisma } from '../prismaClient.js';
+import auth from '../utils/password.utils.js';
+import jwttoken from '../utils/jwttoken.utils.js';
 // import { getIo } from '../websocket';
 
 /*
@@ -9,7 +9,7 @@ import { jwttoken } from '../utils/jwttoken.utils';
 */
 
 // 회원가입
-exports.register = async (req, res) => {
+export const register = async (req, res) => {
   const { username, password } = req.body;
   try {
     const user = await prisma.user.create({
@@ -26,7 +26,7 @@ exports.register = async (req, res) => {
 };
 
 // 가져오기
-exports.getUsers = async (req, res) => {
+export const getUsers = async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       select: {
@@ -43,7 +43,7 @@ exports.getUsers = async (req, res) => {
 };
 
 //
-exports.getMe = async (req, res) => {
+export const getMe = async (req, res) => {
   const { userId } = req.user;
   try {
     const user = await prisma.user.findUnique({
