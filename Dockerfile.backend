@@ -1,5 +1,5 @@
 # 베이스 이미지 선택
-FROM node:24-slim
+FROM node:22-slim
 
 LABEL name="bs6465"
 LABEL description="capstone"
