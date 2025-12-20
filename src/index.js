@@ -9,10 +9,13 @@ const port = 3000;
 // app.use(cors());
 app.use(express.json()); // JSON 파싱
 
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
 app.get('/api', (req, res) => {
   res.send('Hello World!');
 });
- 
+
 // 2. 라우터(Routes) 임포트
 // '/auth'로 시작하는 모든 요청은 auth.routes.js 파일이 처리하도록 넘김
 // 모든 유저, 로그인, 회원가입 담당
