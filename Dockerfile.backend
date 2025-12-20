@@ -1,5 +1,5 @@
 # 베이스 이미지 선택
-FROM node:22-slim
+FROM node:24-slim
 
 LABEL name="bs6465"
 LABEL description="capstone"
@@ -13,6 +13,8 @@ COPY package*.json pnpm-lock.yaml ./
 RUN corepack enable
 
 RUN pnpm install --prod --frozen-lockfile
+
+RUN npx prisma generate
 
 # 소스 코드 복사
 COPY . .
