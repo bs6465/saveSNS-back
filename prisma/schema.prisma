@@ -1,7 +1,7 @@
 // DB 연결 설정 (자동으로 생성됨)
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions"] // PostGIS 등 확장기능 사용 시 필요
+  previewFeatures = ["postgresqlExtensions", "views"] // PostGIS 등 확장기능 사용 시 필요
 }
 
 datasource db {
@@ -90,4 +90,16 @@ model WeatherUltraShortTermForecast {
   // 복합 유니크 키 설정
   @@unique([nx, ny, fcstDatetime], map: "uq_weather_forecast")
   @@map("weather_ultra_short_term_forecast")
+}
+
+// ------------------------------------------------------
+// View 정의
+// ------------------------------------------------------
+view ViewUniqueUserGrid {
+  nx Int
+  ny Int
+
+  // View는 PK가 없으므로, 유니크한 복합 키로 식별자를 지정해줍니다.
+  @@unique([nx, ny])
+  @@map("view_unique_user_grids")
 }
