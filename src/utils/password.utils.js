@@ -4,7 +4,7 @@ import argon2 from 'argon2';
 // Argon2 옵션 설정 (DevOps 관점에서 서버 스펙에 맞춰 튜닝하는 부분)
 const options = {
   type: argon2.argon2id, // [중요] GPU 공격과 사이드 채널 공격을 모두 막는 가장 강력한 타입
-  memoryCost: 2 ** 16, // 메모리 사용량: 64MB (2^16 KB). 라즈베리파이 등에서는 조절 필요
+  memoryCost: 2 ** 14, // 메모리 사용량: 16MB (2^14 KB). 라즈베리파이 등에서는 조절 필요
   timeCost: 3, // 연산 반복 횟수 (CPU 부하에 영향)
   parallelism: 1, // 병렬 처리에 사용할 스레드 수
 };
