@@ -13,7 +13,9 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
+    "@prisma/config": "^7.2.0",
     "express": "^5.2.1",
-    "http": "0.0.1-security"
+    "http": "0.0.1-security",
+    "pg": "^8.16.3"
   }
 }
