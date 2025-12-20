@@ -1,8 +1,9 @@
 // auth.controller.js
-const prisma = require('../prismaClient'); // 위에서 만든 파일 불러오기
-const auth = require('../utils/password.utils');
-const jwttoken = require('../utils/jwttoken.utils');
-// const { getIo } = require('../websocket');
+import { prisma } from '../prismaClient';
+import { auth } from '../utils/password.utils';
+import { jwttoken } from '../utils/jwttoken.utils';
+// import { getIo } from '../websocket';
+
 /*
 로그인, 회원가입 로직
 */

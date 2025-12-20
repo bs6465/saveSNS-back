@@ -1,4 +1,4 @@
-const express = require('express');
+import { express } from 'express';
 const router = express.Router(); // express의 라우터 기능을 사용
 
 /*

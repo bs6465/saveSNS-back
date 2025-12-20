@@ -1,7 +1,7 @@
 // src/prismaClient.js
-const PrismaClient = require('@prisma/client').PrismaClient;
-const { PrismaPg } = require('@prisma/adapter-pg');
-const { Pool } = require('pg');
+import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 
 // 1. 기존 pg의 Pool을 생성 (환경변수에서 URL 가져옴)
 const pool = new Pool({

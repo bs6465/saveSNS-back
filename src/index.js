@@ -1,11 +1,10 @@
 // require('dotenv').config(); // 환경변수는 secrets와 configMap으로 대체됨
-
-const express = require('express');
-// const cors = require('cors'); // cors 라이브러리 불러오기
-const http = require('http');
-// const { initSocketIO } = require('./websocket'); // 웹소켓 핸들러 가져오기
+import { express } from 'express';
+import { http } from 'http';
+// import { initSocketIO } from './websocket'; // 웹소켓 핸들러 가져오기
 const app = express();
 const port = 3000;
+
 
 // 1. 전역 미들웨어 설정
 // app.use(cors());

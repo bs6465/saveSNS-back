@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken');
+import { jwt } from 'jsonwebtoken';
 
 // 토큰 생성 및 업데이트
 function generateToken(user) {

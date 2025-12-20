@@ -1,4 +1,4 @@
-const argon2 = require('argon2');
+import { argon2 } from 'argon2';
 
 // Argon2 옵션 설정 (DevOps 관점에서 서버 스펙에 맞춰 튜닝하는 부분)
 const options = {
