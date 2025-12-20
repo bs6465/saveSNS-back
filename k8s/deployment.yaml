@@ -42,7 +42,7 @@ spec:
       containers:
         - name: api-server
           # [수정 필요] 본인의 Docker Hub 이미지 주소로 변경하세요!
-          image: bs6465/savesns-backend_image:dc3b56a4d9cb8497a6b9c3ddec927d409f77e8d1
+          image: bs6465/savesns-backend_image:141bd72fe76b398259901bc0fd23f71de6dcf9af
 
           # Always: 파드가 뜰 때마다 Docker Hub 확인 (최신 버전 유지에 좋음)
           # IfNotPresent: 없으면 받고, 있으면 그냥 씀 (데이터 절약)
