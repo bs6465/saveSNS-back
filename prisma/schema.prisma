@@ -1,28 +1,93 @@
 // DB 연결 설정 (자동으로 생성됨)
-datasource db {
-  provider = "postgresql"
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"] // PostGIS 등 확장기능 사용 시 필요
 }
 
-generator client {
-  provider = "prisma-client-js"
+datasource db {
+  provider   = "postgresql"
+  extensions = [postgis] // 사용하는 확장기능 명시 (postgis가 설치되어 있어야 함)
 }
 
 // ------------------------------------------------------
 // 여기서부터 테이블 정의 (User 모델 예시)
 // ------------------------------------------------------
 
+// ------------------------------------------------------
 model User {
-  // id: 정수형, 기본키(PK), 자동 증가
-  userId    uuid        @id       @default(uuidv7())   @map("user_id)
-  username  String      @unique
-  password  String      
-  nickname  String
-  location  Geometry
-  nx        Int2
-  ny        Int2
-  createdAt DateTime    @default(now())
-  
-  @@map("users")
+  // DB의 uuidv7() 함수를 기본값으로 사용
+  userId   String @id @default(dbgenerated("uuidv7()")) @map("user_id") @db.Uuid
+  username String @db.VarChar(255)
+  password String @db.VarChar(255)
+  nickname String? @db.VarChar(255)
+
+  // PostGIS geometry 타입은 Prisma에서 공식적으로 'Unsupported'로 처리됩니다.
+  // 데이터를 넣거나 뺄 때 Raw Query를 사용하거나, 관련 라이브러리 도움을 받아야 합니다.
+  location Unsupported("geometry")?
+
+  // Generated Columns (DB가 자동으로 계산하는 컬럼)
+  // Prisma는 이 로직을 직접 관리하지 않고, DB에 맡깁니다.
+  nx Int? @default(dbgenerated("(kma_lonlat_to_grid(st_x(location), st_y(location))).nx")) @db.SmallInt
+  ny Int? @default(dbgenerated("(kma_lonlat_to_grid(st_x(location), st_y(location))).ny")) @db.SmallInt
+
+  // 관계 설정 (posts 테이블과 1:N 관계)
+  posts Post[]
+
+  // 인덱스 및 테이블 매핑
+  @@index([nx, ny], map: "idx_users_nx_ny")
+  @@map("users") // 실제 DB 테이블 이름
 }
 
-// ------------------------------------------------------
+model Post {
+  postId    String   @id @default(dbgenerated("uuidv7()")) @map("post_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  location  Unsupported("geometry")?
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  contents  String
+
+  // 관계 설정
+  user      User     @relation(fields: [userId], references: [userId])
+  media     MediaStorage[]
+
+  @@map("posts")
+}
+
+model MediaStorage {
+  mediaId   String   @id @default(dbgenerated("uuidv7()")) @map("media_id") @db.Uuid
+  link      String?  @db.VarChar
+  postId    String   @map("post_id") @db.Uuid
+  type      String?  @db.VarChar(20)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+
+  // 관계 설정 (Cascade Delete 적용)
+  post      Post     @relation(fields: [postId], references: [postId], onDelete: Cascade)
+
+  @@map("media_storage")
+}
+
+model WeatherUltraShortTermForecast {
+  id           String   @id @default(dbgenerated("uuidv7()")) @map("weather_ultra_short_term_forecast_id") @db.Uuid
+  nx           Int      @db.SmallInt
+  ny           Int      @db.SmallInt
+  baseDatetime DateTime @map("base_datetime") @db.Timestamp(6)
+  fcstDatetime DateTime @map("fcst_datetime") @db.Timestamp(6)
+  
+  // 날씨 데이터 필드들
+  t1h Int? @db.SmallInt
+  rn1 Int? @db.SmallInt
+  sky Int? @db.SmallInt
+  uuu Int? @db.SmallInt
+  vvv Int? @db.SmallInt
+  reh Int? @db.SmallInt
+  pty Int? @db.SmallInt
+  lgt Int? @db.SmallInt
+  vec Int? @db.SmallInt
+  wsd Int? @db.SmallInt
+  
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime? @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  // 복합 유니크 키 설정
+  @@unique([nx, ny, fcstDatetime], map: "uq_weather_forecast")
+  @@map("weather_ultra_short_term_forecast")
+}
