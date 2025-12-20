@@ -32,7 +32,7 @@ export const getUsers = async (req, res) => {
       select: {
         userId: true,
         username: true,
-        teamId: true,
+        password: true,
       },
     });
     res.status(200).json({ message: users });
@@ -51,7 +51,6 @@ export const getMe = async (req, res) => {
       select: {
         userId: true,
         username: true,
-        teamId: true,
       },
     });
     res.status(200).json({ message: user });
