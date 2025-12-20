@@ -10,7 +10,7 @@ spec:
   selector:
     app: api-backend
   ports:
-    - port: 80 # 내부끼리 통신할 서비스 포트 (들어오는 문)
+    - port: 3000 # 내부끼리 통신할 서비스 포트 (들어오는 문)
       targetPort: 3000 # 타겟 포트 (Node.js 포트)
       nodePort: 30000 # 실제로 외부에서 접근할 포트 (30000~32767 사이)
 
