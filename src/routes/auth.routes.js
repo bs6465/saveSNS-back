@@ -13,6 +13,9 @@ import * as authController from '../controllers/auth.controller.js';
 // 2. 경로와 컨트롤러 함수를 연결
 // GET / 모든 유저 가져오기
 // router.get('/', authController.getUsers);
+router.get('/', authController.getUsers);
+router.get('/me', authController.getMe);
+router.post('/register', authController.register);
 
 // // GET /me 내 정보 가져오기
 // router.get('/me', [verifyToken, checkAuth], authController.getMe);
