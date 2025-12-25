@@ -3,11 +3,12 @@ import { prisma } from '../prismaClient.js';
 import auth from '../utils/password.utils.js';
 import jwttoken from '../utils/jwttoken.utils.js';
 // import { getIo } from '../websocket';
+import { successResponse, errorResponse } from '../utils/response.utils.js';
 
 /*
 로그인, 회원가입 로직
 */
- 
+
 // 회원가입
 export const register = async (req, res) => {
   const { username, password } = req.body;
@@ -18,14 +19,14 @@ export const register = async (req, res) => {
         password: await auth.hashPassword(password),
       },
     });
-    res.status(201).json({ message: 'User registered successfully', userId: user.userId });
+    return successResponse(res, '회원가입 성공', { userId: user.userId }, 201);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server Error' });
+    return errorResponse(res, '유저를 찾을 수 없습니다.', null, 404);
   }
 };
 
-// 가져오기
+// 가져오기 개발자용
 export const getUsers = async (req, res) => {
   try {
     const users = await prisma.user.findMany({
@@ -35,10 +36,10 @@ export const getUsers = async (req, res) => {
         password: true,
       },
     });
-    res.status(200).json({ message: users });
+    return successResponse(res, '유저 목록 조회 성공', users, 200);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Server Error' });
+    return errorResponse(res, '서버 에러', null, 500);
   }
 };
 
@@ -53,9 +54,9 @@ export const getMe = async (req, res) => {
         username: true,
       },
     });
-    res.status(200).json({ message: user });
+    return successResponse(res, 'GetMe 성공', user, 200);
   } catch (err) {
     console.error('GetMe 에러:', err);
-    res.status(500).json({ message: '서버 에러' });
+    return errorResponse(res, '서버 에러', null, 500);
   }
 };
