@@ -12,7 +12,7 @@ const pool = new Pool({
   port: process.env.DB_PORT,
   ssl: false,
 });
-
+  
 // 2. Prisma용 어댑터 생성
 const adapter = new PrismaPg(pool);
 

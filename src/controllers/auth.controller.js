@@ -22,7 +22,7 @@ export const register = async (req, res) => {
     return successResponse(res, '회원가입 성공', { userId: user.userId }, 201);
   } catch (err) {
     console.error(err);
-    return errorResponse(res, '유저를 찾을 수 없습니다.', null, 404);
+    return errorResponse(res, '유저 등록 실패', null, 404);
   }
 };
 
