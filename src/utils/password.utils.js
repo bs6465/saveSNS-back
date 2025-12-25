@@ -8,9 +8,12 @@ const options = {
   timeCost: 3, // 연산 반복 횟수 (CPU 부하에 영향)
   parallelism: 1, // 병렬 처리에 사용할 스레드 수
 };
- 
+
+/* import auth from '../utils/password.utils.js';  형태로 사용 */
+
 /**
- * 1. 비밀번호를 해시화하는 함수
+ * 1. 비밀번호를 해시화하는 함수 (auth.hashPassword(password) 형태로 사용)
+ * return : 해시된 비밀번호 문자열
  */
 async function hashPassword(plainPassword) {
   try {
@@ -24,7 +27,8 @@ async function hashPassword(plainPassword) {
 }
 
 /**
- * 2. 원본 비밀번호와 해시된 비밀번호를 비교하는 함수
+ * 2. 원본 비밀번호와 해시된 비밀번호를 비교하는 함수 (auth.comparePassword(plain, hash) 형태로 사용)
+ * return : 일치하면 true, 불일치하면 false
  */
 async function comparePassword(plainPassword, hashedPassword) {
   try {
