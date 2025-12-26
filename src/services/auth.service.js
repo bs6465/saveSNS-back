@@ -15,6 +15,8 @@ export const registerUser = async (username, password) => {
     throw new Error('DUPLICATE_USER'); // 커스텀 에러 처리가 좋음
   }
 
+  console.log(`Registering user: username:${username}`);
+
   const hashedPassword = await auth.hashPassword(password);
 
   const user = await prisma.user.create({
