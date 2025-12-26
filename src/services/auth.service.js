@@ -11,6 +11,7 @@ export const registerUser = async (username, password) => {
   // 중복 체크
   const existingUser = await prisma.user.findUnique({ where: { username } });
   if (existingUser) {
+    console.log(`Duplicate user found: username:${username}`);
     throw new Error('DUPLICATE_USER'); // 커스텀 에러 처리가 좋음
   }
 
@@ -22,6 +23,7 @@ export const registerUser = async (username, password) => {
       password: hashedPassword,
     },
   });
+  console.log(`User registered: userId:${user.userId}, username:${username}`);
 
   return { userId: user.userId };
 };
@@ -30,19 +32,32 @@ export const registerUser = async (username, password) => {
 export const authenticateUser = async (username, password) => {
   const user = await prisma.user.findUnique({
     where: { username },
+    select: {
+      userId: true,
+      username: true,
+      nickname: true,
+      password: true,
+    },
   });
 
-  if (!user) return null;
+  if (!user) {
+    console.log(`User not found: username:${username}`);
+    return null;
+  }
 
   const isMatch = await auth.comparePassword(password, user.password);
-  if (!isMatch) return null;
+  if (!isMatch) {
+    console.log(`Password mismatch for userId: ${user.userId}, username:${user.username}`);
+    return null;
+  }
 
-  // 토큰 발급까지 여기서 수행하거나, 컨트롤러에서 수행할 수 있음
+  // 토큰 발급
   const token = jwttoken.generateToken({
     userId: user.userId,
     username: user.username,
     nickname: user.nickname,
   });
+  console.log(`User authenticated: userId:${user.userId}, username:${user.username}`);
 
   return { token };
 };
@@ -57,6 +72,8 @@ export const getAllUsers = async () => {
       // password 제외
     },
   });
+  console.log(`Users retrieved: count:${users.length}`);
+
   return users;
 };
 
@@ -70,5 +87,7 @@ export const getUserById = async (userId) => {
       nickname: true,
     },
   });
+  console.log(`User retrieved: userId:${user.userId}, username:${user.username}`);
+
   return user;
 };

@@ -6,42 +6,58 @@ import jwttoken from '../utils/jwttoken.utils.js';
 */
 
 // POST /api/posts/ 글 작성 로직
-export const createPost = async (userId, title, content) => {
+export const createPost = async (userId, content, location) => {
   const post = await prisma.post.create({
     data: {
       userId,
-      title,
       content,
+      location,
+    },
+    select: {
+      postId: true,
     },
   });
+  console.log(`Post created: postId:${post.postId} by userId:${userId}`);
+
   return post;
 };
 
 // GET /api/posts/ 글 목록 조회 로직
-export const getPosts = async () => {
-  const posts = await prisma.post.findMany({
-    select: {
-      postId: true,
-      title: true,
-      content: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
-  return posts;
+export const getPosts = async (longitude, latitude, rangeMeters) => {
+  // 내 위치 기준 반경 n km 내 글 찾기
+  // Prisma Raw Query 사용
+  const nearbyPosts = await prisma.$queryRaw`
+    SELECT 
+      post_id, 
+      user_id,
+      content, 
+      created_at, 
+      ST_Distance(
+        location::geography, 
+        ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography
+      ) as distance
+    FROM "posts"
+    WHERE ST_DWithin(
+      location::geography,
+      ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography,
+      ${rangeMeters}
+    )
+    ORDER BY distance ASC
+  `;
+  console.log(`Posts retrieved: count:${nearbyPosts.length}`);
+
+  return nearbyPosts;
 };
 
+// GET /api/posts/ 글 전체 조회 로직
 export const getAllPosts = async () => {
   const posts = await prisma.post.findMany({
     select: {
       postId: true,
-      title: true,
+      userId: true,
       content: true,
       createdAt: true,
-      updatedAt: true,
+      location: true,
     },
     orderBy: {
       createdAt: 'desc',
