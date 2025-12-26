@@ -1,7 +1,8 @@
 // 성공 응답용
 function successResponse(res, message = 'Success', data, status = 200) {
   console.log(`data to send:`, data);
-  return res.status(status).json({
+  return res.json({
+    status,
     success: true,
     message,
     data,
@@ -10,7 +11,8 @@ function successResponse(res, message = 'Success', data, status = 200) {
 
 // 에러 응답용
 function errorResponse(res, message = 'Error', data = null, status = 500) {
-  return res.status(status).json({
+  return res.json({
+    status,
     success: false,
     message,
     data,
