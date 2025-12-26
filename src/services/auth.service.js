@@ -23,9 +23,17 @@ export const registerUser = async (username, password) => {
       password: hashedPassword,
     },
   });
+
+  // 토큰 발급
+  const token = jwttoken.generateToken({
+    userId: user.userId,
+    username: user.username,
+    nickname: user.nickname,
+  });
+
   console.log(`User registered: userId:${user.userId}, username:${username}`);
 
-  return { userId: user.userId };
+  return { token };
 };
 
 // POST /api/auth/login 로그인 로직

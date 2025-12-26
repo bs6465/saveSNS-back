@@ -17,8 +17,8 @@ export const register = async (req, res) => {
   }
 
   try {
-    const data = await authService.registerUser(username, password);
-    return successResponse(res, '회원가입 성공', data, 201);
+    const { token } = await authService.registerUser(username, password);
+    return successResponse(res, '회원가입 성공', { token }, 201);
   } catch (err) {
     console.error(err);
     if (err.message === 'DUPLICATE_USER') {
@@ -57,14 +57,14 @@ export const login = async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const result = await authService.authenticateUser(username, password);
+    const token = await authService.authenticateUser(username, password);
 
-    if (!result) {
+    if (!token) {
       // 보안상 "아이디가 틀림" vs "비번이 틀림"을 구분해서 알려주는 것은 좋지 않음
       return errorResponse(res, '아이디 또는 비밀번호가 잘못되었습니다.', null, 401);
     }
 
-    return successResponse(res, '로그인 성공', result, 200);
+    return successResponse(res, '로그인 성공', { token }, 200);
   } catch (err) {
     console.error(err);
     return errorResponse(res, '서버 에러', null, 500);
