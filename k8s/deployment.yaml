@@ -75,6 +75,11 @@ spec:
                 secretKeyRef:
                   name: backend-secret
                   key: REDIS_PASSWORD
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: JWT_SECRET_KEY
 
           # [HPA 필수 조건]
           # requests가 없으면 HPA가 기준을 못 잡아서 작동 안 함!
