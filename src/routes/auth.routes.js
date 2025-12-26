@@ -16,19 +16,7 @@ import * as authController from '../controllers/auth.controller.js';
 router.get('/', authController.getUsers);
 router.get('/me', authController.getMe);
 router.post('/register', authController.register);
+router.post('/login', authController.login);
+router.post('/logout', authController.logout);
 
-// // GET /me 내 정보 가져오기
-// router.get('/me', [verifyToken, checkAuth], authController.getMe);
-
-// // POST /users/ (회원가입) -> authController.register 함수
-// router.post('/register', authController.register);
-
-// // PUT /timezone 타임존 변경
-// router.put('/timezone', [verifyToken, checkAuth], authController.updateTimezone);
-
-// // POST /users/login (로그인) -> authController.login 함수
-// router.post('/login', authController.login);
-
-// 3. 이 라우터를 밖으로 내보냅니다.
-// module.exports = router; // CommonJS 방식
 export default router; // ES6 모듈 방식
