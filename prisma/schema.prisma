@@ -31,7 +31,7 @@ model User {
   ny Int? @default(dbgenerated("(kma_lonlat_to_grid(st_x(location), st_y(location))).ny")) @db.SmallInt
 
   provider  String   @default("local") // "local", "google", "kakao" 등 구분
-  snsId     String?  // 구글 고유 ID (sub 값)
+  snsId     String?  @map("sns_id") // 구글 고유 ID (sub 값)
 
   // 관계 설정 (posts 테이블과 1:N 관계)
   posts Post[]

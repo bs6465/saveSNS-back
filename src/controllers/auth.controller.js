@@ -6,7 +6,7 @@ import { successResponse, errorResponse } from '../utils/response.utils.js';
 /*
 로그인, 회원가입 로직
 */
- 
+
 // POST /api/auth/register 회원가입
 export const register = async (req, res) => {
   const { username, password } = req.body;
