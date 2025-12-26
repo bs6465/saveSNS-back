@@ -17,8 +17,8 @@ datasource db {
 model User {
   // DB의 uuidv7() 함수를 기본값으로 사용
   userId   String @id @default(dbgenerated("uuidv7()")) @map("user_id") @db.Uuid
-  username String @db.VarChar(255)
-  password String @db.VarChar(255)
+  username String @db.VarChar(255) @unique
+  password String? @db.VarChar(255)
   nickname String? @db.VarChar(255)
 
   // PostGIS geometry 타입은 Prisma에서 공식적으로 'Unsupported'로 처리됩니다.
