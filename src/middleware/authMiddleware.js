@@ -1,4 +1,4 @@
-import { verify } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 /*
 JWT 토큰을 바탕으로 user_id, username 가져오기
@@ -15,7 +15,7 @@ export function verifyToken(req, res, next) {
   }
 
   // 토큰 검증
-  verify(token, process.env.JWT_SECRET_KEY, (err, user) => {
+  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, user) => {
     if (err) {
       return res.status(403).json({ message: '유효하지 않은 토큰입니다.' });
     }
