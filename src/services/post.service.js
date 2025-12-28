@@ -5,11 +5,11 @@ import { prisma } from '../prismaClient.js';
 */
 
 // POST /api/posts/ 글 작성 로직
-export const createPost = async (userId, content, longitude, latitude) => {
+export const createPost = async (userId, contents, longitude, latitude) => {
   const post = await prisma.post.create({
     data: {
       userId,
-      content,
+      contents,
       longitude,
       latitude,
     },
@@ -30,7 +30,7 @@ export const getPosts = async (longitude, latitude, rangeMeters) => {
     SELECT 
       post_id, 
       user_id,
-      content, 
+      contents, 
       created_at, 
       ST_Distance(
         location::geography, 
@@ -55,7 +55,7 @@ export const getAllPosts = async () => {
     select: {
       postId: true,
       userId: true,
-      content: true,
+      contents: true,
       createdAt: true,
       location: true,
     },
