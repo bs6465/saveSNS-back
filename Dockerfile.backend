@@ -1,5 +1,7 @@
-# 베이스 이미지 선택
-FROM node:24-slim
+# -------------------------------
+# 1. 의존성 설치 단계 (Builder)
+# -------------------------------
+FROM node:24-slim AS builder
 
 LABEL name="bs6465"
 LABEL description="capstone"
@@ -9,7 +11,6 @@ WORKDIR /usr/src/app
 
 # 의존성 설치 (캐시 활용)
 COPY package*.json pnpm-lock.yaml ./
-
 RUN corepack enable
 
 RUN pnpm install --prod --frozen-lockfile
@@ -17,8 +18,18 @@ RUN pnpm install --prod --frozen-lockfile
 COPY prisma ./prisma/
 RUN npx prisma generate
 
-# 소스 코드 복사
-COPY . .
+# -------------------------------
+# 2. 실행 단계 (Runner) - 최종 이미지
+# -------------------------------
+FROM node:24-slim
+
+WORKDIR /usr/src/app
+
+COPY --from=builder /usr/src/app/node_modules ./node_modules
+COPY --from=builder /usr/src/app/package.json ./package.json
+
+COPY src ./src
+COPY prisma ./prisma
 
 # 애플리케이션 포트 노출
 EXPOSE 3000

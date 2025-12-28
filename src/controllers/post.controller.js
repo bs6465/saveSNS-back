@@ -1,5 +1,5 @@
 // post.controller.js
-import * as postService from '../services/auth.service.js';
+import * as postService from '../services/post.service.js';
 import { successResponse, errorResponse } from '../utils/response.utils.js';
 // import { getIo } from '../websocket';
 
