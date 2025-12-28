@@ -7,7 +7,7 @@ const router = express.Router(); // express의 라우터 기능을 사용
 
 // 실제 로직이 담긴 '컨트롤러'를 임포트
 import * as authController from '../controllers/auth.controller.js';
-const { verifyToken, checkAuth } = require('../middleware/authMiddleware.js'); // 미들웨어 경로
+import { verifyToken, checkAuth } from '../middleware/authMiddleware.js';
 
 // 경로와 컨트롤러 함수를 연결
 // GET / 모든 유저 가져오기
