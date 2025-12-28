@@ -12,10 +12,7 @@ export const createPost = async (req, res) => {
   const { userId } = req.user;
   const { content, longitude, latitude } = req.body;
 
-  if (!userId) {
-    return errorResponse(res, '로그인이 필요합니다.', null, 401);
-  }
-  if (!content) {
+  if (!content || !longitude || !latitude) {
     return errorResponse(res, '필수 입력값이 누락되었습니다.', null, 400);
   }
   try {
