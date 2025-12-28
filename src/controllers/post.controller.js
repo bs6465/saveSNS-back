@@ -36,6 +36,7 @@ export const getPosts = async (req, res) => {
     const posts = await post.getPosts(longitude, latitude, rangeMeters);
     return successResponse(res, '글 목록 조회 성공', posts, 200);
   } catch (err) {
+    console.error(err);
     return errorResponse(res, '서버 에러', null, 500);
   }
 };
@@ -46,6 +47,7 @@ export const getAllPosts = async (req, res) => {
     const posts = await post.getAllPosts();
     return successResponse(res, '글 목록 조회 성공', posts, 200);
   } catch (err) {
+    console.error(err);
     return errorResponse(res, '서버 에러', null, 500);
   }
 };

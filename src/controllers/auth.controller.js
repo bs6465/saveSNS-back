@@ -34,6 +34,7 @@ export const getUsers = async (req, res) => {
     const users = await authService.getAllUsers();
     return successResponse(res, '유저 목록 조회 성공', users, 200);
   } catch (err) {
+    console.error(err);
     return errorResponse(res, '서버 에러', null, 500);
   }
 };
@@ -48,6 +49,7 @@ export const getMe = async (req, res) => {
     const user = await authService.getUserById(userId);
     return successResponse(res, '내 정보 조회 성공', user, 200);
   } catch (err) {
+    console.error(err);
     return errorResponse(res, '서버 에러', null, 500);
   }
 };
