@@ -25,12 +25,3 @@ export function verifyToken(req, res, next) {
     next(); // 다음 미들웨어 또는 라우터 핸들러로 이동
   });
 }
-
-// 로그인(인증) 여부만 확인하는 미들웨어 (verifyToken 후에 사용)
-export function checkAuth(req, res, next) {
-  if (!req.user) {
-    return res.status(401).json({ message: '인증 정보가 없습니다. (토큰 누락 또는 만료)' });
-  }
-  // 인증 통과!
-  next();
-}

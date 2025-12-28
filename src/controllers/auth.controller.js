@@ -11,11 +11,6 @@ import { successResponse, errorResponse } from '../utils/response.utils.js';
 export const register = async (req, res) => {
   const { username, password, longitude, latitude } = req.body;
 
-  // 간단한 유효성 검사 (라이브러리 사용 권장)
-  if (!username || !password) {
-    return errorResponse(res, '필수 입력값이 누락되었습니다.', null, 400);
-  }
-
   try {
     const { token } = await authService.registerUser(username, password, longitude, latitude);
     return successResponse(res, '회원가입 성공', { token }, 201);
@@ -42,9 +37,7 @@ export const getUsers = async (req, res) => {
 // GET /api/auth/me 내 정보 가져오기
 export const getMe = async (req, res) => {
   const { userId } = req.user;
-  if (!userId) {
-    return errorResponse(res, '로그인이 필요합니다.', null, 401);
-  }
+
   try {
     const user = await authService.getUserById(userId);
     return successResponse(res, '내 정보 조회 성공', user, 200);
