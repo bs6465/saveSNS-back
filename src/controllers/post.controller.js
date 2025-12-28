@@ -1,5 +1,5 @@
 // post.controller.js
-import * as post from '../services/auth.service.js';
+import * as postService from '../services/auth.service.js';
 import { successResponse, errorResponse } from '../utils/response.utils.js';
 // import { getIo } from '../websocket';
 
@@ -16,7 +16,7 @@ export const createPost = async (req, res) => {
     return errorResponse(res, '필수 입력값이 누락되었습니다.', null, 400);
   }
   try {
-    const data = await post.createPost(userId, content, longitude, latitude);
+    const data = await postService.createPost(userId, content, longitude, latitude);
     return successResponse(res, '글 작성 성공', data, 201);
   } catch (err) {
     console.error(err);
@@ -33,7 +33,7 @@ export const getPosts = async (req, res) => {
   }
 
   try {
-    const posts = await post.getPosts(longitude, latitude, rangeMeters);
+    const posts = await postService.getPosts(longitude, latitude, rangeMeters);
     return successResponse(res, '글 목록 조회 성공', posts, 200);
   } catch (err) {
     console.error(err);
@@ -44,7 +44,7 @@ export const getPosts = async (req, res) => {
 // GET /api/posts/all 글 전체 조회
 export const getAllPosts = async (req, res) => {
   try {
-    const posts = await post.getAllPosts();
+    const posts = await postService.getAllPosts();
     return successResponse(res, '글 목록 조회 성공', posts, 200);
   } catch (err) {
     console.error(err);
