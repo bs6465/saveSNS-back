@@ -19,6 +19,7 @@ export const createPost = async (req, res) => {
     const data = await post.createPost(userId, content, longitude, latitude);
     return successResponse(res, '글 작성 성공', data, 201);
   } catch (err) {
+    console.error(err);
     return errorResponse(res, '서버 에러', null, 500);
   }
 };
