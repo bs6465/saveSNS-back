@@ -7,24 +7,34 @@ import jwttoken from '../utils/jwttoken.utils.js';
 */
 
 // POST /api/auth/register 회원가입 로직
-export const registerUser = async (username, password) => {
+export const registerUser = async (username, password, longitude, latitude) => {
   console.log(`Checking for duplicate user: username:${username}`);
 
   // 중복 체크
-  const existingUser = await prisma.user.findUnique({ where: { username } });
+  const existingUser = await prisma.userAccount.findUnique({ where: { username } });
   if (existingUser) {
     console.log(`Duplicate user found: username:${username}`);
     throw new Error('DUPLICATE_USER'); // 커스텀 에러 처리가 좋음
   }
 
-  console.log(`Registering user: username:${username}`);
-
   const hashedPassword = await auth.hashPassword(password);
 
-  const user = await prisma.user.create({
+  const user = await prisma.userAccount.create({
     data: {
       username,
       password: hashedPassword,
+      // 위치 테이블 동시 생성
+      location: {
+        create: {
+          longitude,
+          latitude,
+        },
+      },
+    },
+    select: {
+      userId: true,
+      username: true,
+      nickname: true,
     },
   });
 
@@ -42,7 +52,7 @@ export const registerUser = async (username, password) => {
 
 // POST /api/auth/login 로그인 로직
 export const authenticateUser = async (username, password) => {
-  const user = await prisma.user.findUnique({
+  const user = await prisma.userAccount.findUnique({
     where: { username },
     select: {
       userId: true,
@@ -76,7 +86,7 @@ export const authenticateUser = async (username, password) => {
 
 // GET /api/auth/ 유저 목록 (비밀번호 제외)
 export const getAllUsers = async () => {
-  const users = await prisma.user.findMany({
+  const users = await prisma.userAccount.findMany({
     select: {
       userId: true,
       username: true,
@@ -91,7 +101,7 @@ export const getAllUsers = async () => {
 
 // GET /api/auth/me 내 정보 가져오기
 export const getUserById = async (userId) => {
-  const user = await prisma.user.findUnique({
+  const user = await prisma.userAccount.findUnique({
     where: { userId },
     select: {
       userId: true,

@@ -1,17 +1,17 @@
 import { prisma } from '../prismaClient.js';
-import jwttoken from '../utils/jwttoken.utils.js';
 
 /* 
 글 작성, 조회, 수정, 삭제 로직
 */
 
 // POST /api/posts/ 글 작성 로직
-export const createPost = async (userId, content, location) => {
+export const createPost = async (userId, content, longitude, latitude) => {
   const post = await prisma.post.create({
     data: {
       userId,
       content,
-      location,
+      longitude,
+      latitude,
     },
     select: {
       postId: true,

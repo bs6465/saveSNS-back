@@ -9,7 +9,7 @@ import { successResponse, errorResponse } from '../utils/response.utils.js';
 
 // POST /api/auth/register 회원가입
 export const register = async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password, longitude, latitude } = req.body;
 
   // 간단한 유효성 검사 (라이브러리 사용 권장)
   if (!username || !password) {
@@ -17,7 +17,7 @@ export const register = async (req, res) => {
   }
 
   try {
-    const { token } = await authService.registerUser(username, password);
+    const { token } = await authService.registerUser(username, password, longitude, latitude);
     return successResponse(res, '회원가입 성공', { token }, 201);
   } catch (err) {
     console.error(err);
