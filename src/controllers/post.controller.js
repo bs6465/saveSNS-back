@@ -10,16 +10,16 @@ import { successResponse, errorResponse } from '../utils/response.utils.js';
 // POST /api/posts/ 글 작성
 export const createPost = async (req, res) => {
   const { userId } = req.user;
-  const { title, content } = req.body;
+  const { content } = req.body;
 
   if (!userId) {
     return errorResponse(res, '로그인이 필요합니다.', null, 401);
   }
-  if (!title || !content) {
+  if (!content) {
     return errorResponse(res, '필수 입력값이 누락되었습니다.', null, 400);
   }
   try {
-    const data = await post.createPost(userId, title, content);
+    const data = await post.createPost(userId, content);
     return successResponse(res, '글 작성 성공', data, 201);
   } catch (err) {
     return errorResponse(res, '서버 에러', null, 500);
