@@ -1,6 +1,19 @@
+export const validateToken = (schema) => (req, res, next) => {
+  const result = schema.safeParse(req.user);
+  console.log('Token validation result:', result);
+
+  if (!result.success) {
+    return res.status(400).json({
+      status: 400,
+      message: '토큰 유효성 검사 실패',
+      errors: result.error.flatten().fieldErrors,
+    });
+  }
+  req.user = result.data;
+  next();
+};
+
 export const validateBody = (schema) => (req, res, next) => {
-  console.log('Validating request body against schema:', schema);
-  console.log('Request body:', req.body);
   // safeParse는 에러를 throw하지 않고 success 여부를 반환합니다.
   const result = schema.safeParse(req.body);
   console.log('Body validation result:', result);
@@ -21,17 +34,18 @@ export const validateBody = (schema) => (req, res, next) => {
   next();
 };
 
-export const validateToken = (schema) => (req, res, next) => {
-  const result = schema.safeParse(req.user);
-  console.log('Token validation result:', result);
+export const validateQuery = (schema) => (req, res, next) => {
+  const result = schema.safeParse(req.query);
+  console.log('Query validation result:', result);
 
   if (!result.success) {
     return res.status(400).json({
       status: 400,
-      message: '토큰 유효성 검사 실패',
+      message: '유효성 검사 실패',
       errors: result.error.flatten().fieldErrors,
     });
   }
-  req.user = result.data;
+
+  req.query = result.data;
   next();
 };

@@ -23,7 +23,7 @@ export const createPost = async (req, res) => {
 
 // GET /api/posts/ 글 목록 조회
 export const getPosts = async (req, res) => {
-  const { longitude, latitude, rangeMeters } = req.body;
+  const { longitude, latitude, rangeMeters } = req.query;
 
   try {
     const posts = await postService.getPosts(longitude, latitude, rangeMeters);
