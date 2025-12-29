@@ -21,7 +21,7 @@ RUN npx prisma generate
 # -------------------------------
 # 2. 실행 단계 (Runner) - 최종 이미지
 # -------------------------------
-FROM node:24-slim
+FROM node:24-alpine
 
 WORKDIR /usr/src/app
 

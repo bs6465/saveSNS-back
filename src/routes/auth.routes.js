@@ -12,7 +12,6 @@ import * as authSchema from '../schema/auth.schema.js';
 // 경로와 컨트롤러 함수를 연결
 
 router.get('/', verifyToken, authController.getUsers); // GET / 모든 유저 가져오기
-router.get('/me', [verifyToken, validateToken(authSchema.checkAuth)], authController.getMe); // GET / 내 정보 가져오기
 router.post('/register', validateBody(authSchema.registerSchema), authController.register); // POST / 회원가입
 router.post('/login', validateBody(authSchema.loginSchema), authController.login); // POST / 로그인
 router.post('/logout', [verifyToken, validateToken(authSchema.checkAuth)], authController.logout); // POST / 로그아웃

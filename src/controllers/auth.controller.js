@@ -53,18 +53,7 @@ export const getUsers = async (req, res) => {
   }
 };
 
-// GET /api/auth/me 내 정보 가져오기
-export const getMe = async (req, res) => {
-  const { userId } = req.user;
 
-  try {
-    const user = await authService.getUserById(userId);
-    return successResponse(res, '내 정보 조회 성공', user, 200);
-  } catch (err) {
-    console.error(err);
-    return errorResponse(res, '서버 에러', null, 500);
-  }
-};
 
 // POST /api/auth/logout 로그아웃
 export const logout = async (req, res) => {

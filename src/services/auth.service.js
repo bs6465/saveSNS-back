@@ -97,17 +97,3 @@ export const getAllUsers = async () => {
   return users;
 };
 
-// GET /api/auth/me 내 정보 가져오기
-export const getUserById = async (userId) => {
-  const user = await prisma.userAccount.findUnique({
-    where: { userId },
-    select: {
-      userId: true,
-      username: true,
-      nickname: true,
-    },
-  });
-  console.log(`User retrieved: userId:${user.userId}, username:${user.username}`);
-
-  return user;
-};
