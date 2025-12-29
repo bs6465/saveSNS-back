@@ -1,4 +1,6 @@
 export const validateBody = (schema) => (req, res, next) => {
+  console.log('Validating request body against schema:', schema);
+  console.log('Request body:', req.body);
   // safeParse는 에러를 throw하지 않고 success 여부를 반환합니다.
   const result = schema.safeParse(req.body);
   console.log('Body validation result:', result);
