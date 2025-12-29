@@ -5,7 +5,7 @@ import { prisma } from '../prismaClient.js';
 */
 
 // GET /api/profile/:userId 프로필 조회 로직
-export const getProfileById = async (userId) => {
+export const getProfile = async (userId) => {
   const profile = await prisma.userAccount.findUnique({
     where: { userId },
     select: {
