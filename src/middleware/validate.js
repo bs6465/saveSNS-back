@@ -46,6 +46,6 @@ export const validateQuery = (schema) => (req, res, next) => {
     });
   }
 
-  req.query = result.data;
+  req.validatedQuery = result.data;
   next();
 };
