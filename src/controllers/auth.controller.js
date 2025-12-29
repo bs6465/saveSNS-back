@@ -23,6 +23,25 @@ export const register = async (req, res) => {
   }
 };
 
+// POST /api/auth/login 로그인
+export const login = async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const { token } = await authService.authenticateUser(username, password);
+
+    if (!token) {
+      // 보안상 "아이디가 틀림" vs "비번이 틀림"을 구분해서 알려주는 것은 좋지 않음
+      return errorResponse(res, '아이디 또는 비밀번호가 잘못되었습니다.', null, 401);
+    }
+    console.log(`token: ${token}`);
+    return successResponse(res, '로그인 성공', { token }, 200);
+  } catch (err) {
+    console.error(err);
+    return errorResponse(res, '서버 에러', null, 500);
+  }
+};
+
 // GET /api/auth/ 가져오기 개발자용
 export const getUsers = async (req, res) => {
   try {
@@ -41,25 +60,6 @@ export const getMe = async (req, res) => {
   try {
     const user = await authService.getUserById(userId);
     return successResponse(res, '내 정보 조회 성공', user, 200);
-  } catch (err) {
-    console.error(err);
-    return errorResponse(res, '서버 에러', null, 500);
-  }
-};
-
-// POST /api/auth/login 로그인
-export const login = async (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    const { token } = await authService.authenticateUser(username, password);
-
-    if (!token) {
-      // 보안상 "아이디가 틀림" vs "비번이 틀림"을 구분해서 알려주는 것은 좋지 않음
-      return errorResponse(res, '아이디 또는 비밀번호가 잘못되었습니다.', null, 401);
-    }
-    console.log(`token: ${token}`);
-    return successResponse(res, '로그인 성공', { token }, 200);
   } catch (err) {
     console.error(err);
     return errorResponse(res, '서버 에러', null, 500);

@@ -8,8 +8,6 @@ import jwttoken from '../utils/jwttoken.utils.js';
 
 // POST /api/auth/register 회원가입 로직
 export const registerUser = async (username, password, longitude, latitude) => {
-  console.log(`Checking for duplicate user: username:${username}`);
-
   // 중복 체크
   const existingUser = await prisma.userAccount.findUnique({ where: { username } });
   if (existingUser) {
