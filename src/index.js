@@ -26,6 +26,9 @@ app.use('/api/auth', authRoutes);
 import postRoutes from './routes/post.routes.js';
 app.use('/api/posts', postRoutes);
 
+import profileRoutes from './routes/profile.routes.js';
+app.use('/api/profile', profileRoutes);
+
 // ------------------------------------
 // Express와 WebSocket 서버 통합
 // ------------------------------------
