@@ -26,6 +26,9 @@ export const setLocation = async (userId, longitude, latitude) => {
       longitude,
       latitude,
     },
+    select: {
+      userId: true,
+    },
   });
   console.log(`Location updated: userId:${userId} to (${longitude}, ${latitude})`);
 };
