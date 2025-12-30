@@ -26,7 +26,7 @@ base_time = now.strftime("%H") + "30" # 시간 + 30분 고정
 
 def transform_value(category, value_str):
     """
-    카테고리에 따라 값을 변환합니다. 
+    카테고리에 따라 값을 변환합니다.
     - RN1 '강수없음' -> 0
     - MULTIPLY_TARGETS -> float * 10 -> int
     - 나머지 -> int
