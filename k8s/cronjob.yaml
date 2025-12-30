@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: daily-data-updater
+  name: weather_ultra_short_term_forecast
 spec:
   # 스케줄 설정 (Crontab 문법)
   # 예: 한국 시간 새벽 4시 (KST는 UTC+9 이므로, UTC 19:00 설정)
@@ -18,12 +18,17 @@ spec:
       template:
         spec:
           containers:
+<<<<<<< HEAD
             - name: data-updater
               image: bs6465/savesns-script-getweather:9b31375bff6bb98be0649141f7416679555350db
+=======
+            - name: weather_ultra_short_term_forecast
+              image: bs6465/savesns-script-getweather:1b7be74fd0299b73ee330d057e92d63d6dd5b724
+>>>>>>> 73087d3 (Trigger GitHub Action)
               imagePullPolicy: Always
 
               # [실행 명령] 여기서 원하는 파이썬 파일을 실행합니다.
-              command: ['python', 'hi.py']
+              command: ['python', 'weather_ultra_short_term_forecast.py']
 
               # [편의성] DB 접속 정보도 똑같이 가져옴 (코드 재사용)
               envFrom:
