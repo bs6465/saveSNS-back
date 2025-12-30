@@ -23,7 +23,7 @@ MULTIPLY_TARGETS = {'T1H', 'RN1', 'UUU', 'VVV', 'LGT', 'WSD'}  # 10을 곱해야
 now = datetime.now()
 base_date = now.strftime("%Y%m%d")
 base_time = now.strftime("%H") + "30" # 시간 + 30분 고정
-
+ 
 def transform_value(category, value_str):
     """
     카테고리에 따라 값을 변환합니다.
