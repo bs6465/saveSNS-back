@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: weather_ultra_short_term_forecast
+  name: weather-ultra-short-term-forecast
 spec:
   # 스케줄 설정 (Crontab 문법)
   # 예: 한국 시간 새벽 4시 (KST는 UTC+9 이므로, UTC 19:00 설정)
