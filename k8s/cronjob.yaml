@@ -19,7 +19,7 @@ spec:
         spec:
           containers:
             - name: weather-ultra-short-term-forecast
-              image: bs6465/savesns-script-getweather:fea1253c5a3827eae80c725acef55e1b521414db
+              image: bs6465/savesns-script-getweather:31356663b6721b48b0f551965a449c9a3e767394
 
               imagePullPolicy: Always
 
