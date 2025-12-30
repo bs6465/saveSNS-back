@@ -1,1 +1,2 @@
-fastapi==0.124.3
+asyncpg
+httpx

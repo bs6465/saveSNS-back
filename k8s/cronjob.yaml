@@ -6,7 +6,7 @@ spec:
   # 스케줄 설정 (Crontab 문법)
   # 예: 한국 시간 새벽 4시 (KST는 UTC+9 이므로, UTC 19:00 설정)
   # 팁: K8S 클러스터 시간대가 UTC라면 19 0 * * * 로 해야 함.
-  schedule: '*/10 * * * *'
+  schedule: '*/3 * * * *'
   revisionHistoryLimit: 2 # 롤백용 이전 버전 기록 3개 보관
 
   # 실패 시 재시도 기록 남길 개수
