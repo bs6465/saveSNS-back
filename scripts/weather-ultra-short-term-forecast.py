@@ -67,7 +67,7 @@ async def fetch_and_process_data(client, row, sem):
         try:
             response = await client.get(API_URL, params=params, timeout=10.0)
             print(f"Received response for ({nx}, {ny}): {response.status_code}")
-            print(f"Response content: {response}")
+            print(f"Response content: {response.json()}")
             if response.status_code != 200: return []
             
             # 응답 JSON 파싱
