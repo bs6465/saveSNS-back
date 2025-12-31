@@ -111,6 +111,7 @@ async def fetch_and_process_data(client, row, sem):
                 if category in grouped[key]: # 테이블에 있는 컬럼만 처리
                     grouped[key][category] = transform_value(category, raw_val)
 
+            print("Grouping complete.", grouped.values())
             # 딕셔너리의 값들만 리스트로 변환하여 반환
             return list(grouped.values())
 
