@@ -12,11 +12,11 @@ DB_NAME = os.getenv('DB_NAME')
 DB_PASSWORD = os.getenv('DB_PASSWORD')
 DB_HOST = os.getenv('DB_HOST')
 DB_PORT = os.getenv('DB_PORT')
-
+ 
 API_URL = "https://apihub.kma.go.kr/api/typ02/openApi/VilageFcstInfoService_2.0/getUltraSrtFcst"
 
 DB_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-CONCURRENT_LIMIT = 50  # 동시에 호출할 API 최대 개수 (서버 부하 방지)
+CONCURRENT_LIMIT = 20  # 동시에 호출할 API 최대 개수 (서버 부하 방지)
 
 MULTIPLY_TARGETS = {'T1H', 'RN1', 'UUU', 'VVV', 'LGT', 'WSD'}  # 10을 곱해야 하는 카테고리 목록
 
@@ -34,18 +34,14 @@ def transform_value(category, value_str):
     if category == 'RN1':
         if '강수없음' in value_str:
             return 0
-        # check value_str is floatable  
-        try:
-            val = float(value_str)
-            return int(val * 10)
-        except (ValueError, TypeError):
-            print(f"Warning: RN1 value '{value_str}' is not convertible to float.")
-            return None # 변환 불가 시 None 반환
-
+    
+    # 실수 변환
     try:
         val = float(value_str)
     except (ValueError, TypeError):
-        return 0 # 변환 불가 시 기본값 0
+        # API 오류 등으로 이상한 값이 올 경우
+        print(f"Warning: Unable to convert value '{value_str}' for category '{category}'")
+        return None
 
     # 10 곱하기 처리
     if category in MULTIPLY_TARGETS:
