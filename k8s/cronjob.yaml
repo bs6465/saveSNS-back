@@ -24,7 +24,7 @@ spec:
               imagePullPolicy: Always
 
               # [실행 명령] 여기서 원하는 파이썬 파일을 실행합니다.
-              command: ['python', 'weatherUltraShortTermForecast.py']
+              command: ['python', 'weather-ultra-short-term-forecast.py']
 
               # [편의성] DB 접속 정보도 똑같이 가져옴 (코드 재사용)
               envFrom:
