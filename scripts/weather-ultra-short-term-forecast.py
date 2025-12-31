@@ -56,6 +56,7 @@ async def fetch_and_process_data(client, row, sem):
     """
     nx, ny = row['nx'], row['ny']
     
+    print(f"Fetching data for ({nx}, {ny})...")
     params = {
         'authKey': WEATHER_API_KEY, 'numOfRows': '1000', 'pageNo': '1',
         'dataType': 'JSON', 'base_date': base_date, 'base_time': base_time,
@@ -65,6 +66,8 @@ async def fetch_and_process_data(client, row, sem):
     async with sem:
         try:
             response = await client.get(API_URL, params=params, timeout=10.0)
+            print(f"Received response for ({nx}, {ny}): {response.status_code}")
+            print(f"Response content: {response})
             if response.status_code != 200: return []
             
             # 응답 JSON 파싱
@@ -77,7 +80,7 @@ async def fetch_and_process_data(client, row, sem):
             # Key: (nx, ny, fcst_datetime 문자열)
             # Value: { category: val, ... }
             grouped = {}
-            
+            print(f"Processing data for ({nx}, {ny})...")
             # base_datetime 생성 (API 호출 기준 시각) TIMESTAMP값
             base_dt_obj = parse_datetime(base_date, base_time)
 
@@ -140,6 +143,7 @@ async def main():
         print("Done.")
         print(f"Total processed records: {len(processed_records)}")
         print(processed_records[:10])  # 샘플 출력
+
         # DB에 Upsert
         if processed_records:
             print(f"Upserting {len(processed_records)} records...")
