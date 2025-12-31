@@ -121,7 +121,7 @@ async def main():
     
     try:
         # View에서 대상 조회
-        rows = await conn.fetch("SELECT nx, ny FROM weather_view_target") # 뷰 이름 확인 필요
+        rows = await conn.fetch("SELECT nx, ny FROM view_unique_user_grids") # 뷰 이름 확인 필요
         print(f"Targets: {len(rows)}")
 
         # 세마포어 생성 (동시성 제한)
