@@ -129,6 +129,7 @@ async def main():
         processed_records = []
 
         async with httpx.AsyncClient() as client:
+            print("Fetching weather data...")
             tasks = [fetch_and_process_data(client, row, sem) for row in rows]
             results = await asyncio.gather(*tasks)
             
@@ -136,6 +137,9 @@ async def main():
                 if res:
                     processed_records.extend(res)
 
+        print("Done.")
+        print(f"Total processed records: {len(processed_records)}")
+        print(processed_records[:10])  # 샘플 출력
         # DB에 Upsert
         if processed_records:
             print(f"Upserting {len(processed_records)} records...")
