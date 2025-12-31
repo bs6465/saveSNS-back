@@ -78,10 +78,12 @@ async def fetch_and_process_data(client, row, sem):
             # Value: { category: val, ... }
             grouped = {}
             print(f"Processing data for ({nx}, {ny})...")
+            print(f"Total items: {len(items)}")
             # base_datetime 생성 (API 호출 기준 시각) TIMESTAMP값
             base_dt_obj = parse_datetime(base_date, base_time)
 
             for item in items:
+                print(f"Item: {item}")
                 fcst_date = item['fcstDate']
                 fcst_time = item['fcstTime']
                 category = item['category']
