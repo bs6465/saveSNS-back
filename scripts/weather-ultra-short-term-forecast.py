@@ -34,7 +34,14 @@ def transform_value(category, value_str):
     if category == 'RN1':
         if '강수없음' in value_str:
             return 0
-    
+        # check value_str is floatable  
+        try:
+            val = float(value_str)
+            return int(val * 10)
+        except (ValueError, TypeError):
+            print(f"Warning: RN1 value '{value_str}' is not convertible to float.")
+            return None # 변환 불가 시 None 반환
+
     try:
         val = float(value_str)
     except (ValueError, TypeError):
