@@ -1,0 +1,63 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: weather-short-term-forecast
+spec:
+  schedule: '10 2-23/3 * * *' # 매 3시간마다, 02시부터 23시까지 
+  revisionHistoryLimit: 2 # 롤백용 이전 버전 기록 3개 보관
+
+  # 실패 시 재시도 기록 남길 개수
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: weather-short-term-forecast
+              image: bs6465/savesns-script-getweather-short-term-forecast:c8c258495161a5c9f380109c1f3068372c0e9387
+
+              imagePullPolicy: Always
+
+              # [실행 명령] 여기서 원하는 파이썬 파일을 실행합니다.
+              command: ['python', 'weather-short-term-forecast.py']
+
+              # [편의성] DB 접속 정보도 똑같이 가져옴 (코드 재사용)
+              envFrom:
+                - configMapRef:
+                    name: backend-config
+
+              # [핵심] API 서버 주소와 인증 토큰 주입
+              env:
+                - name: WEATHER_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: WEATHER_API_KEY # Secret에 이 키 추가 필요!
+
+                - name: DB_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: DB_USER
+                - name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: DB_PASSWORD
+
+          # CronJob은 작업이 끝나면 죽어야 하므로 restartPolicy는 OnFailure나 Never
+          restartPolicy: OnFailure
+
+          # [추가] "홈 서버를 편애하라"는 설정
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100 # 점수 높음 (가장 선호)
+                  preference:
+                  matchExpressions:
+                    - key: node-type
+                      operator: NotIn
+                      values:
+                        - cloud-worker # 클라우드 워커가 '아닌' 곳을 선호해라 (즉, 홈서버)

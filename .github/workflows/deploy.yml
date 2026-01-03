@@ -9,6 +9,7 @@ on:
 env:
   BACKEND_IMAGE_NAME: savesns-backend_image
   SCRIPTS_IMAGE_NAME: savesns-script-getweather
+  SCRIPTS_SHORT_TERM_IMAGE_NAME: savesns-script-getweather-short-term-forecast
 
 jobs:
   build-and-deploy:
@@ -29,8 +30,9 @@ jobs:
               - 'package.json'
               - 'Dockerfile.backend'
             scripts:
-              - 'scripts/**'
-              - 'Dockerfile.scripts'
+              - 'scripts/weather-ultra-short-term-forecast.py'
+              - 'Dockerfile.scripts'\
+              - 'scripts/weather-short-term-forecast.py'
 
       # (Docker 로그인, 빌드, 푸시 단계는 기존과 동일)
       - name: Login to Docker Hub
@@ -58,6 +60,14 @@ jobs:
           file: Dockerfile.scripts
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.SCRIPTS_IMAGE_NAME }}:${{ github.sha }}
+      - name: Build Scripts Short Term
+        if: steps.changes.outputs.scripts == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Dockerfile.scripts
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.SCRIPTS_SHORT_TERM_IMAGE_NAME }}:${{ github.sha }}
 
       # 핵심: 바로 로컬 파일 수정해서 푸시
       - name: Update Kubernetes Manifest
@@ -72,6 +82,11 @@ jobs:
           if [ "${{ steps.changes.outputs.scripts }}" == "true" ]; then
             echo "Updating Scripts Manifest..."
             sed -i 's|image: .*/${{ env.SCRIPTS_IMAGE_NAME }}:.*|image: ${{ secrets.DOCKER_USERNAME }}/${{ env.SCRIPTS_IMAGE_NAME }}:${{ github.sha }}|' k8s/cronjob.yaml
+          fi
+
+          if [ "${{ steps.changes.outputs.scripts }}" == "true" ]; then
+            echo "Updating Scripts Short Term Manifest..."
+            sed -i 's|image: .*/${{ env.SCRIPTS_SHORT_TERM_IMAGE_NAME }}:.*|image: ${{ secrets.DOCKER_USERNAME }}/${{ env.SCRIPTS_SHORT_TERM_IMAGE_NAME }}:${{ github.sha }}|' k8s/weather-short-term-forecast.yaml
           fi
 
           git config --global user.email "github-actions@github.com"
