@@ -184,7 +184,7 @@ async def main():
                     tmn = EXCLUDED.tmn,
                     tmx = EXCLUDED.tmx,
                     updated_at = now();
-            """
+            """ 
             
             params_list = [
                 (

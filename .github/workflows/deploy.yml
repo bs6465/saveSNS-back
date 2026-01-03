@@ -31,7 +31,7 @@ jobs:
               - 'Dockerfile.backend'
             scripts:
               - 'scripts/weather-ultra-short-term-forecast.py'
-              - 'Dockerfile.scripts'\
+              - 'Dockerfile.scripts'
               - 'scripts/weather-short-term-forecast.py'
 
       # (Docker 로그인, 빌드, 푸시 단계는 기존과 동일)
