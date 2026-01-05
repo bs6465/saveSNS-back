@@ -28,17 +28,19 @@ export const getPosts = async (longitude, latitude, rangeMeters) => {
   // Prisma Raw Query 사용
   const nearbyPosts = await prisma.$queryRaw`
     SELECT 
-      post_id, 
-      user_id,
-      contents, 
-      created_at, 
+      p.post_id AS "postId",       -- JS 스타일로 이름 변경
+      p.user_id AS "userId",
+      p.contents, 
+      p.created_at AS "createdAt", 
+      u.nickname,                  -- JOIN한 테이블에서 닉네임 가져오기
       ST_Distance(
-        location::geography, 
+        p.location::geography, 
         ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography
       ) as distance
-    FROM "posts"
+    FROM "posts" p
+    JOIN "users_account" u ON p.user_id = u.user_id  -- 여기서 JOIN 발생!
     WHERE ST_DWithin(
-      location::geography,
+      p.location::geography,
       ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography,
       ${rangeMeters}
     )
@@ -72,13 +74,18 @@ export const getPostById = async (postId) => {
     where: { postId },
     select: {
       postId: true,
-      userId: true,
       contents: true,
-      longitude: true,
-      latitude: true,
       createdAt: true,
+      userAccount: {
+        select: {
+          // JOIN
+          userId: true,
+          nickname: true,
+        },
+      },
     },
   });
+  if (!post) throw new Error('Post not found');
   console.log(`Post retrieved: postId:${postId}`);
   return post;
 };
