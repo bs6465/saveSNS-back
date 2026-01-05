@@ -17,3 +17,8 @@ export const getPostsSchema = z.object({
   latitude: z.coerce.number().min(-90).max(90),
   rangeMeters: z.coerce.number().min(100).max(10000),
 });
+
+// 게시글 ID로 상세 조회 스키마, validateQuery 미들웨어에서 사용
+export const getPostByIdSchema = z.object({
+  postId: z.uuid('유효한 postId(UUID)여야 합니다.'),
+});

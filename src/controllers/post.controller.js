@@ -44,3 +44,18 @@ export const getAllPosts = async (req, res) => {
     return errorResponse(res, '서버 에러', null, 500);
   }
 };
+
+// GET /api/posts/:postId 글 상세 조회
+export const getPostById = async (req, res) => {
+  const { postId } = req.params;
+
+  try {
+    const post = await postService.getPostById(postId);
+    return successResponse(res, '글 상세 조회 성공', post, 200);
+  } catch (err) {
+    console.error(err);
+    return errorResponse(res, '서버 에러', null, 500);
+  }
+};
+
+// GET /api/posts/:postId 거리 계산

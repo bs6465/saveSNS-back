@@ -66,4 +66,19 @@ export const getAllPosts = async () => {
   return posts;
 };
 
-// 추가적인 글 수정, 삭제 로직도 여기에 작성 가능
+// GET /api/posts/:postId 글 상세 조회 로직
+export const getPostById = async (postId) => {
+  const post = await prisma.post.findUnique({
+    where: { postId },
+    select: {
+      postId: true,
+      userId: true,
+      contents: true,
+      longitude: true,
+      latitude: true,
+      createdAt: true,
+    },
+  });
+  console.log(`Post retrieved: postId:${postId}`);
+  return post;
+};

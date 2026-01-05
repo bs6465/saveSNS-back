@@ -112,6 +112,47 @@ model WeatherUltraShortTermForecast {
   @@map("weather_ultra_short_term_forecast")
 }
 
+model WeatherShortTermForecast {
+  id           String   @id @default(dbgenerated("uuidv7()")) @map("weather_short_term_forecast_id") @db.Uuid
+  nx           Int      @db.SmallInt
+  ny           Int      @db.SmallInt
+  baseDatetime DateTime @map("base_datetime") @db.Timestamp(6)
+  fcstDatetime DateTime @map("fcst_datetime") @db.Timestamp(6)
+  
+  // 날씨 데이터 필드들
+  tmp  Int? @db.SmallInt
+  uuu  Int? @db.SmallInt
+  vvv  Int? @db.SmallInt
+  vec  Int? @db.SmallInt
+  wsd  Int? @db.SmallInt
+  sky  Int? @db.SmallInt
+  pty  Int? @db.SmallInt
+  pop  Int? @db.SmallInt
+  wav  Int? @db.SmallInt
+  pcp  Int? @db.SmallInt
+  reh  Int? @db.SmallInt
+  sno  Int? @db.SmallInt
+  tmn  Int? @db.SmallInt
+  tmx  Int? @db.SmallInt
+  
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  // 복합 유니크 키 설정
+  @@unique([nx, ny, fcstDatetime], map: "uq_weather_short_term_forecast")
+  @@map("weather_short_term_forecast")
+}
+
+model Sig {
+  gid        Int      @id @default(dbgenerated("nextval('sig_gid_seq'::regclass)")) @db.SmallInt
+  sigCd      Int     @map("sig_cd") @db.Integer
+  sigEngNm   String  @map("sig_eng_nm") @db.VarChar(40)
+  sigKorNm   String  @map("sig_kor_nm") @db.VarChar(40)
+  geom       Unsupported("geometry(multipolygon, 4326)")
+  sidoNm     String  @map("sido_nm") @db.VarChar(40)
+
+  @@map("sig")
+}
 // ------------------------------------------------------
 // View 정의
 // ------------------------------------------------------
@@ -122,4 +163,33 @@ view ViewUniqueUserGrid {
   // View는 PK가 없으므로, 유니크한 복합 키로 식별자를 지정해줍니다.
   @@unique([nx, ny])
   @@map("view_unique_user_grids")
+}
+
+view Sigungu {
+  sidoNm   String  @map("sido_nm") @db.VarChar(40)
+  sigKorNm String  @map("sig_kor_nm") @db.VarChar(40)
+  geom     Unsupported("geometry(multipolygon, 4326)")
+
+  @@map("sigungu")
+}
+
+// 사용자별 기상 정보 뷰 (weather_ultra_by_user_id)
+view WeatherUltraByUserId {
+  userId    String @map("user_id") @db.Uuid
+  nx        Int    @db.SmallInt
+  ny        Int    @db.SmallInt
+  fcstDatetime DateTime @map("fcst_datetime") @db.Timestamp(6)
+  t1h       Int?   @db.SmallInt
+  rn1       Int?   @db.SmallInt
+  sky       Int?   @db.SmallInt
+  uuu       Int?   @db.SmallInt
+  vvv       Int?   @db.SmallInt
+  reh       Int?   @db.SmallInt
+  pty       Int?   @db.SmallInt
+  lgt       Int?   @db.SmallInt
+  vec       Int?   @db.SmallInt
+  wsd       Int?   @db.SmallInt
+
+  @@unique([userId, fcstDatetime])
+  @@map("weather_ultra_by_user_id")
 }
