@@ -6,7 +6,7 @@ import { successResponse, errorResponse } from '../utils/response.utils.js';
 /*
 로그인, 회원가입 로직
 */
- 
+
 // POST /api/auth/register 회원가입
 export const register = async (req, res) => {
   const { username, password, longitude, latitude } = req.body;
@@ -47,7 +47,7 @@ export const refreshToken = async (req, res) => {
   const oldToken = req.user; // authMiddleware에서 설정한 userId 사용
   try {
     const { token: newToken } = await authService.refreshToken(oldToken);
-    return successResponse(res, '토큰 검증 및 갱신 성공', newToken, 200);
+    return successResponse(res, '토큰 검증 및 갱신 성공', { token: newToken }, 200);
   } catch (err) {
     console.error(err);
     return errorResponse(res, '서버 에러', null, 500);
