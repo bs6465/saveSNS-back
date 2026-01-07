@@ -82,6 +82,18 @@ export const authenticateUser = async (username, password) => {
   return { token };
 };
 
+// POST /api/auth/ 토큰 검증 및 갱신 로직 (미들웨어에서 이미 검증됨)
+export const refreshToken = async (oldToken) => {
+  const newToken = jwttoken.generateToken({
+    userId: oldToken.userId,
+    username: oldToken.username,
+    nickname: oldToken.nickname,
+  });
+  console.log(`Token refreshed for userId:${oldToken.userId}`);
+
+  return { token: newToken };
+};
+
 // GET /api/auth/ 유저 목록 (비밀번호 제외)
 export const getAllUsers = async () => {
   const users = await prisma.userAccount.findMany({
@@ -96,4 +108,3 @@ export const getAllUsers = async () => {
 
   return users;
 };
-

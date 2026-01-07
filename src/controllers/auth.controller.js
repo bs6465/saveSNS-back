@@ -42,6 +42,18 @@ export const login = async (req, res) => {
   }
 };
 
+// POST /api/auth/refresh-token 토큰 검증 및 갱신 (미들웨어에서 이미 검증됨)
+export const refreshToken = async (req, res) => {
+  const oldToken = req.user; // authMiddleware에서 설정한 userId 사용
+  try {
+    const { token: newToken } = await authService.refreshToken(oldToken);
+    return successResponse(res, '토큰 검증 및 갱신 성공', newToken, 200);
+  } catch (err) {
+    console.error(err);
+    return errorResponse(res, '서버 에러', null, 500);
+  }
+};
+
 // GET /api/auth/ 가져오기 개발자용
 export const getUsers = async (req, res) => {
   try {
@@ -52,8 +64,6 @@ export const getUsers = async (req, res) => {
     return errorResponse(res, '서버 에러', null, 500);
   }
 };
-
-
 
 // POST /api/auth/logout 로그아웃
 export const logout = async (req, res) => {

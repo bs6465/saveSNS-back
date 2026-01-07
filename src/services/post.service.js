@@ -30,9 +30,9 @@ export const getPosts = async (longitude, latitude, rangeMeters) => {
     SELECT 
       p.post_id AS "postId",       -- JS 스타일로 이름 변경
       p.user_id AS "userId",
+      u.nickname,                  -- JOIN한 테이블에서 닉네임 가져오기
       p.contents, 
       p.created_at AS "createdAt", 
-      u.nickname,                  -- JOIN한 테이블에서 닉네임 가져오기
       ST_Distance(
         p.location::geography, 
         ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography
