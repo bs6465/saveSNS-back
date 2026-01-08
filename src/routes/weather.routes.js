@@ -11,8 +11,8 @@ import * as authSchema from '../schema/auth.schema.js';
 
 router.get(
   '/ultrashort',
-  validateToken(verifyToken),
-  weatherController.getUltraShortTermForecast
+  validateToken(authSchema.checkAuth),
+  weatherController.getUltraShortTermForecast,
 ); // GET /api/weather/ultrashort 초단기 예보 조회
 
 export default router;
