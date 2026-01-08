@@ -8,6 +8,7 @@ import re
 """
 단기예보 스크립트
 (02, 05, 08, 11, 14, 17, 20, 23시 발표, 예보시간은 발표시각부터 최대 48시간 후)
+환경 변수: WEATHER_API_KEY, DB_USER, DB_NAME, DB_PASSWORD, DB_HOST, DB_PORT
 DB 테이블: weather_short_term_forecast
 """
 

@@ -3,8 +3,12 @@ import asyncpg
 import httpx
 from datetime import datetime
 import os
-import json
 
+"""
+초단기 실황 및 예보 API를 호출하여 데이터를 DB에 저장하는 스크립트
+환경 변수: WEATHER_API_KEY, DB_USER, DB_NAME, DB_PASSWORD, DB_HOST, DB_PORT
+DB 테이블: weather_ultra_short_term_forecast
+"""
 WEATHER_API_KEY = os.getenv('WEATHER_API_KEY')
 
 DB_USER = os.getenv('DB_USER')
