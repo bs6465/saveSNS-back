@@ -1,18 +1,3 @@
-export const validateToken = (schema) => (req, res, next) => {
-  const result = schema.safeParse(req.user);
-  console.log('Token validation result:', result);
-
-  if (!result.success) {
-    return res.status(400).json({
-      status: 400,
-      message: '토큰 유효성 검사 실패',
-      errors: result.error.flatten().fieldErrors,
-    });
-  }
-  req.user = result.data;
-  next();
-};
-
 export const validateBody = (schema) => (req, res, next) => {
   // safeParse는 에러를 throw하지 않고 success 여부를 반환합니다.
   const result = schema.safeParse(req.body);
