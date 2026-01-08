@@ -104,11 +104,11 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 5
 
-        # 컨테이너 내 시간대 설정 (한국 시간)
-        volumeMounts:
-          - name: tz-config
-            mountPath: /etc/localtime
-            readOnly: true
+          # 컨테이너 내 시간대 설정 (한국 시간)
+          volumeMounts:
+            - name: tz-config
+              mountPath: /etc/localtime
+              readOnly: true
 
       # 호스트 노드의 시간대 파일 경로
       volumes:
