@@ -1,4 +1,5 @@
 import { prisma } from '../prismaClient.js';
+import { getKstDate } from '../utils/date.utils.js';
 
 /*
 날씨 관련 로직
@@ -10,7 +11,7 @@ export const getUltraShortTermForecast = async (userId) => {
     where: {
       userId,
       fcstDatetime: {
-        gte: new Date(), // fcst_datetime >= Now() 현재 시각 이후의 예보만 조회
+        gte: getKstDate(), // fcst_datetime >= Now() 현재 시각 이후의 예보만 조회
       },
     },
     orderBy: { fcstDatetime: 'asc' },
