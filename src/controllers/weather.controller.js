@@ -6,7 +6,7 @@ import { successResponse, errorResponse } from '../utils/response.utils.js';
 /*
 날씨 조회 로직
 */
-
+ 
 // GET /api/weather/ultrashort 초단기 예보 조회
 export const getUltraShortTermForecast = async (req, res) => {
   const { userId } = req.user;

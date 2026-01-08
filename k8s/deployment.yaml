@@ -57,6 +57,9 @@ spec:
                 name: backend-config
 
           env:
+            - name: TZ
+              value: Asia/Seoul
+              
             # 2. Secret에서 민감한 정보 개별 로드
             # 사용자 아이디 (Secret의 DB_USER와 연결)
             - name: DB_USER

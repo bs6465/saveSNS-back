@@ -33,6 +33,9 @@ spec:
 
               # [핵심] API 서버 주소와 인증 토큰 주입
               env:
+                - name: TZ
+                  value: Asia/Seoul
+
                 - name: WEATHER_API_KEY
                   valueFrom:
                     secretKeyRef:

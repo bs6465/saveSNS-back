@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: weather-short-term-forecast
 spec:
-  schedule: '10 2-23/3 * * *' # 매 3시간마다, 02시부터 23시까지 
+  schedule: '10 2-23/3 * * *' # 매 3시간마다, 02시부터 23시까지
   revisionHistoryLimit: 2 # 롤백용 이전 버전 기록 3개 보관
 
   # 실패 시 재시도 기록 남길 개수
@@ -30,6 +30,9 @@ spec:
 
               # [핵심] API 서버 주소와 인증 토큰 주입
               env:
+                - name: TZ
+                  value: Asia/Seoul
+
                 - name: WEATHER_API_KEY
                   valueFrom:
                     secretKeyRef:
