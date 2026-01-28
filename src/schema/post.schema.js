@@ -20,7 +20,7 @@ export const getPostsSchema = z.object({
 
 // 게시글 ID로 상세 조회 스키마, validateQuery 미들웨어에서 사용
 export const getPostByIdSchema = z.object({
-  postId: z.string().min(1, '유효한 postId(UUID)여야 합니다.'),
+  postId: z.string().min(1, '유효한 postId(UUID)여야 합니다.'), 
 });
 
 // 게시글 수정 스키마
