@@ -6,6 +6,9 @@ FROM node:24.12.0-slim AS builder
 LABEL name="bs6465"
 LABEL description="capstone"
 
+# OpenSSL 설치 (Prisma 요구사항)
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
 # 작업 디렉터리 설정
 WORKDIR /usr/src/app
 
@@ -13,10 +16,15 @@ WORKDIR /usr/src/app
 COPY package*.json pnpm-lock.yaml ./
 RUN corepack enable
 
-RUN pnpm install --prod --frozen-lockfile
+# prisma를 devDependencies에서도 설치하기 위해 --prod 제거 후 prune
+RUN pnpm install --frozen-lockfile
 
 COPY prisma ./prisma/
-RUN npx prisma generate
+# 로컬 prisma 사용 (버전 일치 보장)
+RUN pnpm exec prisma generate
+
+# production 의존성만 남기기
+RUN pnpm prune --prod
 
 # -------------------------------
 # 2. 실행 단계 (Runner) - 최종 이미지
