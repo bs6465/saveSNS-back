@@ -22,7 +22,7 @@ router.get(
   postController.getPosts,
 ); // GET / 글 목록 조회
 router.get('/all', postController.getAllPosts); // GET / 글 전체 조회
-router.get('/:postId', validateQuery(postSchema.getPostByIdSchema), postController.getPostById); // GET /:postId 글 상세 조회
+router.get('/:postId', validateParams(postSchema.getPostByIdSchema), postController.getPostById); // GET /:postId 글 상세 조회
 router.put(
   '/:postId',
   [verifyToken, validateParams(postSchema.updatePostSchema)],
