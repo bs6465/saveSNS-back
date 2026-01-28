@@ -23,5 +23,11 @@ router.get(
 ); // GET / 글 목록 조회
 router.get('/all', postController.getAllPosts); // GET / 글 전체 조회
 router.get('/:postId', validateQuery(postSchema.getPostByIdSchema), postController.getPostById); // GET /:postId 글 상세 조회
+router.put(
+  '/:postId',
+  [verifyToken, validateBody(postSchema.updatePostSchema)],
+  postController.updatePost,
+); // PUT /:postId 글 수정
+router.delete('/:postId', verifyToken, postController.deletePost); // DELETE /:postId 글 삭제
 
 export default router;

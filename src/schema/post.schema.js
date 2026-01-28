@@ -22,3 +22,8 @@ export const getPostsSchema = z.object({
 export const getPostByIdSchema = z.object({
   postId: z.uuid('유효한 postId(UUID)여야 합니다.'),
 });
+
+// 게시글 수정 스키마
+export const updatePostSchema = z.object({
+  contents: z.string().min(1, 'contents는 최소 1자 이상이어야 합니다.'),
+});

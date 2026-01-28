@@ -54,6 +54,50 @@ export const getPostById = async (req, res) => {
     return successResponse(res, '글 상세 조회 성공', post, 200);
   } catch (err) {
     console.error(err);
+    if (err.message === 'Post not found') {
+      return errorResponse(res, '게시글을 찾을 수 없습니다', null, 404);
+    }
+    return errorResponse(res, '서버 에러', null, 500);
+  }
+};
+
+// PUT /api/posts/:postId 글 수정
+export const updatePost = async (req, res) => {
+  const { postId } = req.params;
+  const { userId } = req.user;
+  const { contents } = req.body;
+
+  try {
+    const updatedPost = await postService.updatePost(postId, userId, contents);
+    return successResponse(res, '글 수정 성공', updatedPost, 200);
+  } catch (err) {
+    console.error(err);
+    if (err.message === 'POST_NOT_FOUND') {
+      return errorResponse(res, '게시글을 찾을 수 없습니다', null, 404);
+    }
+    if (err.message === 'UNAUTHORIZED') {
+      return errorResponse(res, '본인의 게시글만 수정할 수 있습니다', null, 403);
+    }
+    return errorResponse(res, '서버 에러', null, 500);
+  }
+};
+
+// DELETE /api/posts/:postId 글 삭제
+export const deletePost = async (req, res) => {
+  const { postId } = req.params;
+  const { userId } = req.user;
+
+  try {
+    const deletedPost = await postService.deletePost(postId, userId);
+    return successResponse(res, '글 삭제 성공', deletedPost, 200);
+  } catch (err) {
+    console.error(err);
+    if (err.message === 'POST_NOT_FOUND') {
+      return errorResponse(res, '게시글을 찾을 수 없습니다', null, 404);
+    }
+    if (err.message === 'UNAUTHORIZED') {
+      return errorResponse(res, '본인의 게시글만 삭제할 수 있습니다', null, 403);
+    }
     return errorResponse(res, '서버 에러', null, 500);
   }
 };

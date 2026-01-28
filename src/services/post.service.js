@@ -76,6 +76,8 @@ export const getPostById = async (postId) => {
       postId: true,
       contents: true,
       createdAt: true,
+      longitude: true,
+      latitude: true,
       userAccount: {
         select: {
           // JOIN
@@ -88,4 +90,58 @@ export const getPostById = async (postId) => {
   if (!post) throw new Error('Post not found');
   console.log(`Post retrieved: postId:${postId}`);
   return post;
+};
+
+// PUT /api/posts/:postId 글 수정 로직
+export const updatePost = async (postId, userId, contents) => {
+  // 게시글 존재 및 소유권 확인
+  const existingPost = await prisma.post.findUnique({
+    where: { postId },
+    select: { userId: true },
+  });
+
+  if (!existingPost) {
+    throw new Error('POST_NOT_FOUND');
+  }
+
+  if (existingPost.userId !== userId) {
+    throw new Error('UNAUTHORIZED');
+  }
+
+  const updatedPost = await prisma.post.update({
+    where: { postId },
+    data: { contents },
+    select: {
+      postId: true,
+      contents: true,
+      createdAt: true,
+    },
+  });
+
+  console.log(`Post updated: postId:${postId} by userId:${userId}`);
+  return updatedPost;
+};
+
+// DELETE /api/posts/:postId 글 삭제 로직
+export const deletePost = async (postId, userId) => {
+  // 게시글 존재 및 소유권 확인
+  const existingPost = await prisma.post.findUnique({
+    where: { postId },
+    select: { userId: true },
+  });
+
+  if (!existingPost) {
+    throw new Error('POST_NOT_FOUND');
+  }
+
+  if (existingPost.userId !== userId) {
+    throw new Error('UNAUTHORIZED');
+  }
+
+  await prisma.post.delete({
+    where: { postId },
+  });
+
+  console.log(`Post deleted: postId:${postId} by userId:${userId}`);
+  return { postId };
 };
