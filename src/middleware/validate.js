@@ -20,7 +20,7 @@ export const validateBody = (schema) => (req, res, next) => {
 };
 
 export const validateQuery = (schema) => (req, res, next) => {
-  const result = schema.safeParse(req.query);
+  const result = schema.safeParse(req.params);
   console.log('Query validation result:', result);
 
   if (!result.success) {
