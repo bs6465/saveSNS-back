@@ -78,7 +78,7 @@ export const getPostById = async (postId) => {
       createdAt: true,
       longitude: true,
       latitude: true,
-      userAccount: {
+      user: {
         select: {
           // JOIN
           userId: true,
