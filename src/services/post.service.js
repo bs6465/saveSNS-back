@@ -121,7 +121,7 @@ export const updatePost = async (postId, userId, contents) => {
   console.log(`Post updated: postId:${postId} by userId:${userId}`);
   return updatedPost;
 };
-
+ 
 // DELETE /api/posts/:postId 글 삭제 로직
 export const deletePost = async (postId, userId) => {
   // 게시글 존재 및 소유권 확인
