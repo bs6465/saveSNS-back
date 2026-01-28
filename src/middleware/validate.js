@@ -20,7 +20,7 @@ export const validateBody = (schema) => (req, res, next) => {
 };
 
 export const validateQuery = (schema) => (req, res, next) => {
-  const result = schema.safeParse(req.params);
+  const result = schema.safeParse(req.query);
   console.log('Query validation result:', result);
 
   if (!result.success) {
@@ -32,5 +32,20 @@ export const validateQuery = (schema) => (req, res, next) => {
   }
 
   req.validatedQuery = result.data;
+  next();
+};
+
+export const validateParams = (schema) => (req, res, next) => {
+  const result = schema.safeParse(req.params);
+  console.log('Params validation result:', result);
+
+  if (!result.success) {
+    return res.status(400).json({
+      status: 400,
+      message: '유효성 검사 실패',
+      errors: result.error.flatten().fieldErrors,
+    });
+  }
+  req.validatedParams = result.data;
   next();
 };

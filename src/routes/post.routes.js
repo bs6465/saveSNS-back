@@ -2,7 +2,7 @@ import express from 'express';
 const router = express.Router(); // express의 라우터 기능을 사용
 import * as postController from '../controllers/post.controller.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
-import { validateBody, validateQuery } from '../middleware/validate.js';
+import { validateBody, validateQuery, validateParams } from '../middleware/validate.js';
 import * as authSchema from '../schema/auth.schema.js';
 import * as postSchema from '../schema/post.schema.js';
 
@@ -25,7 +25,7 @@ router.get('/all', postController.getAllPosts); // GET / 글 전체 조회
 router.get('/:postId', validateQuery(postSchema.getPostByIdSchema), postController.getPostById); // GET /:postId 글 상세 조회
 router.put(
   '/:postId',
-  [verifyToken, validateBody(postSchema.updatePostSchema)],
+  [verifyToken, validateParams(postSchema.updatePostSchema)],
   postController.updatePost,
 ); // PUT /:postId 글 수정
 router.delete('/:postId', verifyToken, postController.deletePost); // DELETE /:postId 글 삭제
