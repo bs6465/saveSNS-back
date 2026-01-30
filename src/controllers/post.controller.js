@@ -12,6 +12,9 @@ export const createPost = async (req, res) => {
   const { userId } = req.user;
   const { contents, longitude, latitude, mediaUrls } = req.body;
 
+  console.log('=== 게시글 작성 요청 ===');
+  console.log('mediaUrls:', mediaUrls);
+
   try {
     const data = await postService.createPost(userId, contents, longitude, latitude, mediaUrls);
     return successResponse(res, '글 작성 성공', data, 201);
