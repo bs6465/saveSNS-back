@@ -8,7 +8,7 @@ const port = 3000;
 
 // 1. 전역 미들웨어 설정
 app.use(cors()); // CORS 설정
-app.use(express.json()); // JSON 파싱
+app.use(express.json({ limit: '50mb' })); // JSON 파싱 (Base64 이미지 업로드용 크기 증가)
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
