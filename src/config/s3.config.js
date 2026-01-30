@@ -36,12 +36,12 @@ const uploadToS3 = multer({
 
 // S3 Key를 CloudFront URL로 변환
 export const getCloudFrontUrl = (s3Key) => {
-  const cloudFrontDomain = process.env.CLOUDFRONT_DOMAIN;
+  const cloudFrontDomain = process.env.CLOUDFRONT_DOMAIN?.trim();
 
   if (!cloudFrontDomain) {
     console.warn('CLOUDFRONT_DOMAIN이 설정되지 않았습니다. S3 URL을 사용합니다.');
     // CloudFront 도메인이 없으면 S3 URL 사용
-    const bucket = process.env.AWS_S3_BUCKET_NAME.trim();
+    const bucket = process.env.AWS_S3_BUCKET_NAME?.trim();
     const region = (process.env.AWS_REGION || 'ap-northeast-2').trim();
     return `https://${bucket}.s3.${region}.amazonaws.com/${s3Key}`;
   }
