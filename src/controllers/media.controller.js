@@ -13,15 +13,14 @@ export const uploadMedia = async (req, res) => {
     console.log('=== 미디어 업로드 요청 ===');
     console.log('req.files:', req.files);
     console.log('req.body:', req.body);
-    console.log('req.headers:', req.headers);
 
-    if (!req.body || req.body.length === 0) {
-      console.error('파일이 없습니다. req.body:', req.body);
+    if (!req.files || req.files.length === 0) {
+      console.error('파일이 없습니다. req.files:', req.files);
       return errorResponse(res, '업로드할 파일이 없습니다', null, 400);
     }
 
     // 업로드된 파일 정보를 CloudFront URL로 변환하여 반환
-    const files = req.body.map((file) => ({
+    const files = req.files.map((file) => ({
       location: getCloudFrontUrl(file.key), // S3 key를 CloudFront URL로 변환
       key: file.key,
       mimetype: file.mimetype,
