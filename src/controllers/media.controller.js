@@ -10,34 +10,42 @@ import path from 'path';
 미디어 업로드, 삭제 컨트롤러
 */
 
-// POST /api/media/upload - 미디어 업로드
+// POST /api/media/upload - 미디어 업로드 (Base64 JSON)
 export const uploadMedia = async (req, res) => {
   try {
     console.log('=== 미디어 업로드 요청 ===');
-    console.log('req.files:', req.files);
-    console.log('req.body:', req.body);
+    const { images } = req.body;
+    console.log('images count:', images?.length);
 
-    if (!req.files || req.files.length === 0) {
-      console.error('파일이 없습니다. req.files:', req.files);
+    if (!images || images.length === 0) {
       return errorResponse(res, '업로드할 파일이 없습니다', null, 400);
     }
 
-    // 각 파일을 S3에 업로드
-    const uploadPromises = req.files.map(async (file) => {
+    if (images.length > 5) {
+      return errorResponse(res, '최대 5개까지 업로드 가능합니다', null, 400);
+    }
+
+    // 각 이미지를 S3에 업로드
+    const uploadPromises = images.map(async (image) => {
+      const { filename, type, data } = image;
+
+      // Base64를 Buffer로 변환
+      const buffer = Buffer.from(data, 'base64');
+
       // 파일명 생성: posts/YYYYMM/랜덤문자열.확장자
       const date = new Date();
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const randomName = randomBytes(16).toString('hex');
-      const ext = path.extname(file.originalname);
+      const ext = path.extname(filename);
       const key = `posts/${year}${month}/${randomName}${ext}`;
 
       // S3에 업로드
       const command = new PutObjectCommand({
         Bucket: process.env.AWS_S3_BUCKET_NAME,
         Key: key,
-        Body: file.buffer,
-        ContentType: file.mimetype,
+        Body: buffer,
+        ContentType: type,
       });
 
       await s3Client.send(command);
@@ -45,8 +53,8 @@ export const uploadMedia = async (req, res) => {
       return {
         location: getCloudFrontUrl(key),
         key,
-        mimetype: file.mimetype,
-        size: file.size,
+        mimetype: type,
+        size: buffer.length,
       };
     });
 
