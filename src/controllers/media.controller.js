@@ -17,24 +17,13 @@ export const uploadMedia = async (req, res) => {
     console.log('req.files:', req.files);
     console.log('req.body:', req.body);
 
-    // 출력된 로그
-    // === 미디어 업로드 요청 ===
-    // req.files: []
-    // req.body: [Object: null prototype] {
-    //   images: [ '[object Object]', '[object Object]' ]
-    // }
-    // 파일이 없습니다. req.files: []
-
-    const images = req.body.images;
-    console.log('images:', images);
-
-    if (!images || images.length === 0) {
-      console.error('파일이 없습니다. images:', images);
+    if (!req.files || req.files.length === 0) {
+      console.error('파일이 없습니다. req.files:', req.files);
       return errorResponse(res, '업로드할 파일이 없습니다', null, 400);
     }
 
     // 각 파일을 S3에 업로드
-    const uploadPromises = images.map(async (file) => {
+    const uploadPromises = req.files.map(async (file) => {
       // 파일명 생성: posts/YYYYMM/랜덤문자열.확장자
       const date = new Date();
       const year = date.getFullYear();
