@@ -17,6 +17,16 @@ export const uploadMedia = async (req, res) => {
     console.log('req.files:', req.files);
     console.log('req.body:', req.body);
 
+    // 출력된 로그
+    // === 미디어 업로드 요청 ===
+    // req.files: []
+    // req.body: [Object: null prototype] {
+    //   images: [ '[object Object]', '[object Object]' ]
+    // }
+    // 파일이 없습니다. req.files: []
+
+    req.files = req.body.images;
+
     if (!req.files || req.files.length === 0) {
       console.error('파일이 없습니다. req.files:', req.files);
       return errorResponse(res, '업로드할 파일이 없습니다', null, 400);
