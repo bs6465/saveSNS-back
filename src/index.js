@@ -1,4 +1,4 @@
-// require('dotenv').config(); // 환경변수는 secrets와 configMap으로 대체됨
+import 'dotenv/config'; // ES6 방식으로 환경변수 로드
 import express from 'express';
 import http from 'http';
 import cors from 'cors';

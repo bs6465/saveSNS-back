@@ -10,7 +10,13 @@ import { getCloudFrontUrl } from '../config/s3.config.js';
 // POST /api/media/upload - 미디어 업로드
 export const uploadMedia = async (req, res) => {
   try {
+    console.log('=== 미디어 업로드 요청 ===');
+    console.log('req.files:', req.files);
+    console.log('req.body:', req.body);
+    console.log('req.headers:', req.headers);
+
     if (!req.files || req.files.length === 0) {
+      console.error('파일이 없습니다. req.files:', req.files);
       return errorResponse(res, '업로드할 파일이 없습니다', null, 400);
     }
 
