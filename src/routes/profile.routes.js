@@ -11,10 +11,12 @@ import * as profileSchema from '../schema/profile.schema.js';
 */
 
 router.get('/', [verifyToken], profileController.getProfile); // GET / 프로필 조회
+router.patch('/', [verifyToken], profileController.updateProfile); // PATCH / 프로필 수정
+router.get('/posts', [verifyToken], profileController.getUserPosts); // GET /posts 내 게시글 목록
 router.post(
   '/location',
   [verifyToken, validateBody(profileSchema.setLocationSchema)],
   profileController.setLocation,
-); // POST / 위치 정보 저장
+); // POST /location 위치 정보 저장
 
 export default router;

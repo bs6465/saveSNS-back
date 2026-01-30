@@ -27,14 +27,14 @@ export const getPosts = async (longitude, latitude, rangeMeters) => {
   // 내 위치 기준 반경 n km 내 글 찾기
   // Prisma Raw Query 사용
   const nearbyPosts = await prisma.$queryRaw`
-    SELECT 
+    SELECT
       p.post_id AS "postId",       -- JS 스타일로 이름 변경
       p.user_id AS "userId",
       u.nickname,                  -- JOIN한 테이블에서 닉네임 가져오기
-      p.contents, 
-      p.created_at AS "createdAt", 
+      p.contents,
+      p.created_at AS "createdAt",
       ST_Distance(
-        p.location::geography, 
+        p.location::geography,
         ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography
       ) as distance
     FROM "posts" p
@@ -47,6 +47,20 @@ export const getPosts = async (longitude, latitude, rangeMeters) => {
     ORDER BY distance ASC
   `;
   console.log(`Posts retrieved: count:${nearbyPosts.length}`);
+
+  // 각 게시글의 미디어 정보 추가
+  for (const post of nearbyPosts) {
+    const media = await prisma.mediaStorage.findMany({
+      where: { postId: post.postId },
+      select: {
+        mediaId: true,
+        link: true,
+        type: true,
+      },
+      orderBy: { createdAt: 'asc' },
+    });
+    post.media = media;
+  }
 
   return nearbyPosts;
 };
@@ -84,6 +98,15 @@ export const getPostById = async (postId) => {
           userId: true,
           nickname: true,
         },
+      },
+      media: {
+        select: {
+          mediaId: true,
+          link: true,
+          type: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'asc' },
       },
     },
   });

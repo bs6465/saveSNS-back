@@ -10,10 +10,10 @@ import { successResponse, errorResponse } from '../utils/response.utils.js';
 // POST /api/posts/ 글 작성
 export const createPost = async (req, res) => {
   const { userId } = req.user;
-  const { contents, longitude, latitude } = req.body;
+  const { contents, longitude, latitude, mediaUrls } = req.body;
 
   try {
-    const data = await postService.createPost(userId, contents, longitude, latitude);
+    const data = await postService.createPost(userId, contents, longitude, latitude, mediaUrls);
     return successResponse(res, '글 작성 성공', data, 201);
   } catch (err) {
     console.error(err);

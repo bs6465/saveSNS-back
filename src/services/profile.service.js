@@ -32,3 +32,45 @@ export const setLocation = async (userId, longitude, latitude) => {
   });
   console.log(`Location updated: userId:${userId} to (${longitude}, ${latitude})`);
 };
+
+// PATCH /api/profile 프로필 수정 로직
+export const updateProfile = async (userId, nickname) => {
+  const updatedProfile = await prisma.userAccount.update({
+    where: { userId },
+    data: { nickname },
+    select: {
+      userId: true,
+      username: true,
+      nickname: true,
+    },
+  });
+  console.log(`Profile updated: userId:${userId}, nickname:${nickname}`);
+  return updatedProfile;
+};
+
+// GET /api/profile/posts 내 게시글 목록 조회 로직
+export const getUserPosts = async (userId) => {
+  const posts = await prisma.post.findMany({
+    where: { userId },
+    select: {
+      postId: true,
+      contents: true,
+      createdAt: true,
+      longitude: true,
+      latitude: true,
+      media: {
+        select: {
+          mediaId: true,
+          link: true,
+          type: true,
+        },
+        orderBy: { createdAt: 'asc' },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+  console.log(`User posts retrieved: userId:${userId}, count:${posts.length}`);
+  return posts;
+};

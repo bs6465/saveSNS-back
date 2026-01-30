@@ -12,6 +12,8 @@ Dockerfile
 # 기타 로컬 파일
 .env
 *.env
+.env.example
+.vscode/
 README.md
 npm-debug.log
 .prettierrc.json

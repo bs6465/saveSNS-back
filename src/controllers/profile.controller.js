@@ -33,3 +33,34 @@ export const setLocation = async (req, res) => {
     return errorResponse(res, '서버 에러', null, 500);
   }
 };
+
+// PATCH /api/profile 프로필 수정
+export const updateProfile = async (req, res) => {
+  const { userId } = req.user;
+  const { nickname } = req.body;
+
+  try {
+    if (!nickname || !nickname.trim()) {
+      return errorResponse(res, '닉네임을 입력해주세요', null, 400);
+    }
+
+    const updatedProfile = await profileService.updateProfile(userId, nickname.trim());
+    return successResponse(res, '프로필 수정 성공', updatedProfile, 200);
+  } catch (err) {
+    console.error(err);
+    return errorResponse(res, '서버 에러', null, 500);
+  }
+};
+
+// GET /api/profile/posts 내 게시글 목록 조회
+export const getUserPosts = async (req, res) => {
+  const { userId } = req.user;
+
+  try {
+    const posts = await profileService.getUserPosts(userId);
+    return successResponse(res, '내 게시글 조회 성공', posts, 200);
+  } catch (err) {
+    console.error(err);
+    return errorResponse(res, '서버 에러', null, 500);
+  }
+};

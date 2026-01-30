@@ -32,6 +32,9 @@ app.use('/api/profile', profileRoutes);
 import weatherRoutes from './routes/weather.routes.js';
 app.use('/api/weather', weatherRoutes);
 
+import mediaRoutes from './routes/media.routes.js';
+app.use('/api/media', mediaRoutes);
+
 // ------------------------------------
 // Express와 WebSocket 서버 통합
 // ------------------------------------
