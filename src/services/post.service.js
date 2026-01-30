@@ -5,7 +5,7 @@ import { prisma } from '../prismaClient.js';
 */
 
 // POST /api/posts/ 글 작성 로직
-export const createPost = async (userId, contents, longitude, latitude) => {
+export const createPost = async (userId, contents, longitude, latitude, mediaUrls = []) => {
   const post = await prisma.post.create({
     data: {
       userId,
@@ -18,6 +18,20 @@ export const createPost = async (userId, contents, longitude, latitude) => {
     },
   });
   console.log(`Post created: postId:${post.postId} by userId:${userId}`);
+
+  // 미디어 URL이 있으면 MediaStorage에 저장
+  if (mediaUrls && mediaUrls.length > 0) {
+    const mediaData = mediaUrls.map((url) => ({
+      postId: post.postId,
+      link: url,
+      type: 'image', // 현재는 이미지만 지원
+    }));
+
+    await prisma.mediaStorage.createMany({
+      data: mediaData,
+    });
+    console.log(`Media saved: ${mediaUrls.length} files for postId:${post.postId}`);
+  }
 
   return post;
 };
