@@ -42,7 +42,7 @@ export const uploadMedia = async (req, res) => {
 
       // S3에 업로드
       const command = new PutObjectCommand({
-        Bucket: process.env.AWS_S3_BUCKET_NAME,
+        Bucket: process.env.AWS_S3_BUCKET_NAME?.trim(),
         Key: key,
         Body: buffer,
         ContentType: type,
