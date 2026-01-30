@@ -40,12 +40,13 @@ export const uploadMedia = async (req, res) => {
       const ext = path.extname(filename);
       const key = `posts/${year}${month}/${randomName}${ext}`;
 
-      // S3에 업로드
+      // S3에 업로드 (One Zone-IA 스토리지 클래스 사용)
       const command = new PutObjectCommand({
         Bucket: process.env.AWS_S3_BUCKET_NAME?.trim(),
         Key: key,
         Body: buffer,
         ContentType: type,
+        StorageClass: 'ONEZONE_IA', // 단일 가용 영역, 비용 절감
       });
 
       await s3Client.send(command);
