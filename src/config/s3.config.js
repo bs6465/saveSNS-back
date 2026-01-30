@@ -25,26 +25,9 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Multer S3 설정
+// Multer 메모리 저장소 설정 (먼저 메모리에 저장 후 S3에 업로드)
 const uploadToS3 = multer({
-  storage: multerS3({
-    s3: s3Client,
-    bucket: process.env.AWS_S3_BUCKET_NAME,
-    contentType: multerS3.AUTO_CONTENT_TYPE,
-    metadata: (req, file, cb) => {
-      cb(null, { fieldName: file.fieldname });
-    },
-    key: (req, file, cb) => {
-      // 파일명 생성: posts/YYYYMM/랜덤문자열.확장자
-      const date = new Date();
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const randomName = randomBytes(16).toString('hex');
-      const ext = path.extname(file.originalname);
-      const filename = `posts/${year}${month}/${randomName}${ext}`;
-      cb(null, filename);
-    },
-  }),
+  storage: multer.memoryStorage(),
   fileFilter,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB 제한

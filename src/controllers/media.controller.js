@@ -1,7 +1,10 @@
 // media.controller.js
 import * as mediaService from '../services/media.service.js';
 import { successResponse, errorResponse } from '../utils/response.utils.js';
-import { getCloudFrontUrl } from '../config/s3.config.js';
+import { getCloudFrontUrl, s3Client } from '../config/s3.config.js';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { randomBytes } from 'crypto';
+import path from 'path';
 
 /*
 미디어 업로드, 삭제 컨트롤러
@@ -19,13 +22,35 @@ export const uploadMedia = async (req, res) => {
       return errorResponse(res, '업로드할 파일이 없습니다', null, 400);
     }
 
-    // 업로드된 파일 정보를 CloudFront URL로 변환하여 반환
-    const files = req.files.map((file) => ({
-      location: getCloudFrontUrl(file.key), // S3 key를 CloudFront URL로 변환
-      key: file.key,
-      mimetype: file.mimetype,
-      size: file.size,
-    }));
+    // 각 파일을 S3에 업로드
+    const uploadPromises = req.files.map(async (file) => {
+      // 파일명 생성: posts/YYYYMM/랜덤문자열.확장자
+      const date = new Date();
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const randomName = randomBytes(16).toString('hex');
+      const ext = path.extname(file.originalname);
+      const key = `posts/${year}${month}/${randomName}${ext}`;
+
+      // S3에 업로드
+      const command = new PutObjectCommand({
+        Bucket: process.env.AWS_S3_BUCKET_NAME,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      });
+
+      await s3Client.send(command);
+
+      return {
+        location: getCloudFrontUrl(key),
+        key,
+        mimetype: file.mimetype,
+        size: file.size,
+      };
+    });
+
+    const files = await Promise.all(uploadPromises);
 
     return successResponse(res, '미디어 업로드 성공', { files }, 201);
   } catch (err) {
