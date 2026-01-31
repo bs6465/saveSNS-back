@@ -153,6 +153,30 @@ model Sig {
 
   @@map("sig")
 }
+
+/// 대기질 측정 정보 (air_quality)
+model AirQuality {
+  id          String   @id @default(dbgenerated("uuidv7()")) @map("air_quality_id") @db.Uuid
+  stationName String   @map("station_name") @db.VarChar(100)
+  sidoName    String   @map("sido_name") @db.VarChar(40)
+  pm25Value   Int?     @map("pm25_value") @db.SmallInt
+  pm10Value   Int?     @map("pm10_value") @db.SmallInt
+  pm25Grade   Int?     @map("pm25_grade") @db.SmallInt
+  pm10Grade   Int?     @map("pm10_grade") @db.SmallInt
+  khaiGrade   Int?     @map("khai_grade") @db.SmallInt
+  khaiValue   Int?     @map("khai_value") @db.SmallInt
+  o3Value     Float?   @map("o3_value")
+  coValue     Float?   @map("co_value")
+  no2Value    Float?   @map("no2_value")
+  so2Value    Float?   @map("so2_value")
+  dataTime    DateTime @map("data_time") @db.Timestamp(6)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@unique([stationName, dataTime], map: "uq_air_quality_station_time")
+  @@index([sidoName, dataTime])
+  @@map("air_quality")
+}
+
 // ------------------------------------------------------
 // View 정의
 // ------------------------------------------------------

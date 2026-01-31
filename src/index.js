@@ -35,6 +35,9 @@ app.use('/api/weather', weatherRoutes);
 import mediaRoutes from './routes/media.routes.js';
 app.use('/api/media', mediaRoutes);
 
+import airqualityRoutes from './routes/airquality.routes.js';
+app.use('/api/airquality', airqualityRoutes);
+
 // ------------------------------------
 // Express와 WebSocket 서버 통합
 // ------------------------------------
