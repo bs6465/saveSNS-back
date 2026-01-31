@@ -16,16 +16,12 @@ router.post(
   [verifyToken, validateBody(postSchema.createPostSchema)],
   postController.createPost,
 ); // POST / 글 작성
-router.get(
-  '/',
-  [verifyToken, validateQuery(postSchema.getPostsSchema)],
-  postController.getPosts,
-); // GET / 글 목록 조회
+router.get('/', [verifyToken, validateQuery(postSchema.getPostsSchema)], postController.getPosts); // GET / 글 목록 조회
 router.get('/all', postController.getAllPosts); // GET / 글 전체 조회
 router.get('/:postId', validateParams(postSchema.getPostByIdSchema), postController.getPostById); // GET /:postId 글 상세 조회
 router.put(
   '/:postId',
-  [verifyToken, validateParams(postSchema.updatePostSchema)],
+  [verifyToken, validateBody(postSchema.updatePostSchema)],
   postController.updatePost,
 ); // PUT /:postId 글 수정
 router.delete('/:postId', verifyToken, postController.deletePost); // DELETE /:postId 글 삭제
