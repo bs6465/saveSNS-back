@@ -6,26 +6,43 @@ import { prisma } from '../prismaClient.js';
 
 // 시도명 기반 최신 대기질 조회
 export const getAirQualityBySido = async (sidoName) => {
-  const airQuality = await prisma.airQuality.findFirst({
-    where: { sidoName },
-    orderBy: { dataTime: 'desc' },
+  const airQuality = await prisma.air_quality.findFirst({
+    where: { sido_name: sidoName },
+    orderBy: { data_time: 'desc' },
     select: {
-      stationName: true,
-      sidoName: true,
-      pm25Value: true,
-      pm10Value: true,
-      pm25Grade: true,
-      pm10Grade: true,
-      khaiGrade: true,
-      khaiValue: true,
-      o3Value: true,
-      coValue: true,
-      no2Value: true,
-      so2Value: true,
-      dataTime: true,
+      station_name: true,
+      sido_name: true,
+      pm25_value: true,
+      pm10_value: true,
+      pm25_grade: true,
+      pm10_grade: true,
+      khai_grade: true,
+      khai_value: true,
+      o3_value: true,
+      co_value: true,
+      no2_value: true,
+      so2_value: true,
+      data_time: true,
     },
   });
-  return airQuality;
+
+  if (!airQuality) return null;
+
+  return {
+    stationName: airQuality.station_name,
+    sidoName: airQuality.sido_name,
+    pm25Value: airQuality.pm25_value,
+    pm10Value: airQuality.pm10_value,
+    pm25Grade: airQuality.pm25_grade,
+    pm10Grade: airQuality.pm10_grade,
+    khaiGrade: airQuality.khai_grade,
+    khaiValue: airQuality.khai_value,
+    o3Value: airQuality.o3_value,
+    coValue: airQuality.co_value,
+    no2Value: airQuality.no2_value,
+    so2Value: airQuality.so2_value,
+    dataTime: airQuality.data_time,
+  };
 };
 
 // 사용자 위치 기반 대기질 조회 (Sig 테이블과 조인하여 시도명 추출)

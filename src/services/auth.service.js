@@ -9,7 +9,7 @@ import jwttoken from '../utils/jwttoken.utils.js';
 // POST /api/auth/register 회원가입 로직
 export const registerUser = async (username, password, longitude, latitude) => {
   // 중복 체크
-  const existingUser = await prisma.userAccount.findUnique({ where: { username } });
+  const existingUser = await prisma.users_account.findUnique({ where: { username } });
   if (existingUser) {
     console.log(`Duplicate user found: username:${username}`);
     throw new Error('DUPLICATE_USER'); // 커스텀 에러 처리가 좋음
@@ -17,12 +17,12 @@ export const registerUser = async (username, password, longitude, latitude) => {
 
   const hashedPassword = await auth.hashPassword(password);
 
-  const user = await prisma.userAccount.create({
+  const user = await prisma.users_account.create({
     data: {
       username,
       password: hashedPassword,
       // 위치 테이블 동시 생성
-      location: {
+      users_location: {
         create: {
           longitude,
           latitude,
@@ -30,7 +30,7 @@ export const registerUser = async (username, password, longitude, latitude) => {
       },
     },
     select: {
-      userId: true,
+      user_id: true,
       username: true,
       nickname: true,
     },
@@ -38,22 +38,22 @@ export const registerUser = async (username, password, longitude, latitude) => {
 
   // 토큰 발급
   const token = jwttoken.generateToken({
-    userId: user.userId,
+    userId: user.user_id,
     username: user.username,
     nickname: user.nickname,
   });
 
-  console.log(`User registered: userId:${user.userId}, username:${username}`);
+  console.log(`User registered: userId:${user.user_id}, username:${username}`);
 
   return { token };
 };
 
 // POST /api/auth/login 로그인 로직
 export const authenticateUser = async (username, password) => {
-  const user = await prisma.userAccount.findUnique({
+  const user = await prisma.users_account.findUnique({
     where: { username },
     select: {
-      userId: true,
+      user_id: true,
       username: true,
       nickname: true,
       password: true,
@@ -67,17 +67,17 @@ export const authenticateUser = async (username, password) => {
 
   const isMatch = await auth.comparePassword(password, user.password);
   if (!isMatch) {
-    console.log(`Password mismatch for userId: ${user.userId}, username:${user.username}`);
+    console.log(`Password mismatch for userId: ${user.user_id}, username:${user.username}`);
     return null;
   }
 
   // 토큰 발급
   const token = jwttoken.generateToken({
-    userId: user.userId,
+    userId: user.user_id,
     username: user.username,
     nickname: user.nickname,
   });
-  console.log(`User authenticated: userId:${user.userId}, username:${user.username}`);
+  console.log(`User authenticated: userId:${user.user_id}, username:${user.username}`);
 
   return { token };
 };
@@ -96,9 +96,9 @@ export const refreshToken = async (oldToken) => {
 
 // GET /api/auth/ 유저 목록 (비밀번호 제외)
 export const getAllUsers = async () => {
-  const users = await prisma.userAccount.findMany({
+  const users = await prisma.users_account.findMany({
     select: {
-      userId: true,
+      user_id: true,
       username: true,
       nickname: true,
       // password 제외
@@ -106,5 +106,9 @@ export const getAllUsers = async () => {
   });
   console.log(`Users retrieved: count:${users.length}`);
 
-  return users;
+  return users.map((u) => ({
+    userId: u.user_id,
+    username: u.username,
+    nickname: u.nickname,
+  }));
 };

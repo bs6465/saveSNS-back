@@ -6,34 +6,34 @@ import { prisma } from '../prismaClient.js';
 
 // POST /api/posts/ 글 작성 로직
 export const createPost = async (userId, contents, longitude, latitude, mediaUrls = []) => {
-  const post = await prisma.post.create({
+  const post = await prisma.posts.create({
     data: {
-      userId,
+      user_id: userId,
       contents,
       longitude,
       latitude,
     },
     select: {
-      postId: true,
+      post_id: true,
     },
   });
-  console.log(`Post created: postId:${post.postId} by userId:${userId}`);
+  console.log(`Post created: postId:${post.post_id} by userId:${userId}`);
 
   // 미디어 URL이 있으면 MediaStorage에 저장
   if (mediaUrls && mediaUrls.length > 0) {
     const mediaData = mediaUrls.map((url) => ({
-      postId: post.postId,
+      post_id: post.post_id,
       link: url,
       type: 'image', // 현재는 이미지만 지원
     }));
 
-    await prisma.mediaStorage.createMany({
+    await prisma.media_storage.createMany({
       data: mediaData,
     });
-    console.log(`Media saved: ${mediaUrls.length} files for postId:${post.postId}`);
+    console.log(`Media saved: ${mediaUrls.length} files for postId:${post.post_id}`);
   }
 
-  return post;
+  return { postId: post.post_id };
 };
 
 // GET /api/posts/ 글 목록 조회 로직
@@ -65,23 +65,23 @@ export const getPosts = async (longitude, latitude, rangeMeters) => {
   // 각 게시글의 미디어, 좋아요 수, 댓글 수 추가
   for (const post of nearbyPosts) {
     const [media, likeCount, commentCount] = await Promise.all([
-      prisma.mediaStorage.findMany({
-        where: { postId: post.postId },
+      prisma.media_storage.findMany({
+        where: { post_id: post.postId },
         select: {
-          mediaId: true,
+          media_id: true,
           link: true,
           type: true,
         },
-        orderBy: { createdAt: 'asc' },
+        orderBy: { created_at: 'asc' },
       }),
-      prisma.postLike.count({
+      prisma.post_like.count({
         where: { postId: post.postId },
       }),
       prisma.comment.count({
         where: { postId: post.postId },
       }),
     ]);
-    post.media = media;
+    post.media = media.map(m => ({ mediaId: m.media_id, link: m.link, type: m.type }));
     post.likeCount = likeCount;
     post.commentCount = commentCount;
   }
@@ -91,102 +91,127 @@ export const getPosts = async (longitude, latitude, rangeMeters) => {
 
 // GET /api/posts/ 글 전체 조회 로직
 export const getAllPosts = async () => {
-  const posts = await prisma.post.findMany({
+  const posts = await prisma.posts.findMany({
     select: {
-      postId: true,
-      userId: true,
+      post_id: true,
+      user_id: true,
       contents: true,
-      createdAt: true,
+      created_at: true,
       location: true,
     },
     orderBy: {
-      createdAt: 'desc',
+      created_at: 'desc',
     },
   });
-  return posts;
+  return posts.map(p => ({
+    postId: p.post_id,
+    userId: p.user_id,
+    contents: p.contents,
+    createdAt: p.created_at,
+    location: p.location,
+  }));
 };
 
 // GET /api/posts/:postId 글 상세 조회 로직
 export const getPostById = async (postId) => {
-  const post = await prisma.post.findUnique({
-    where: { postId },
+  const post = await prisma.posts.findUnique({
+    where: { post_id: postId },
     select: {
-      postId: true,
+      post_id: true,
       contents: true,
-      createdAt: true,
+      created_at: true,
       longitude: true,
       latitude: true,
-      user: {
+      users_account: {
         select: {
-          // JOIN
-          userId: true,
+          user_id: true,
           nickname: true,
         },
       },
-      media: {
+      media_storage: {
         select: {
-          mediaId: true,
+          media_id: true,
           link: true,
           type: true,
-          createdAt: true,
+          created_at: true,
         },
-        orderBy: { createdAt: 'asc' },
+        orderBy: { created_at: 'asc' },
       },
     },
   });
   if (!post) throw new Error('Post not found');
   console.log(`Post retrieved: postId:${postId}`);
-  return post;
+  return {
+    postId: post.post_id,
+    contents: post.contents,
+    createdAt: post.created_at,
+    longitude: post.longitude,
+    latitude: post.latitude,
+    user: {
+      userId: post.users_account.user_id,
+      nickname: post.users_account.nickname,
+    },
+    media: post.media_storage.map(m => ({
+      mediaId: m.media_id,
+      link: m.link,
+      type: m.type,
+      createdAt: m.created_at,
+    })),
+  };
 };
 
 // PUT /api/posts/:postId 글 수정 로직
 export const updatePost = async (postId, userId, contents) => {
   // 게시글 존재 및 소유권 확인
-  const existingPost = await prisma.post.findUnique({
-    where: { postId },
-    select: { userId: true },
+  const existingPost = await prisma.posts.findUnique({
+    where: { post_id: postId },
+    select: { user_id: true },
   });
 
   if (!existingPost) {
     throw new Error('POST_NOT_FOUND');
   }
 
-  if (existingPost.userId !== userId) {
+  if (existingPost.user_id !== userId) {
     throw new Error('UNAUTHORIZED');
   }
 
-  const updatedPost = await prisma.post.update({
-    where: { postId },
+  const updatedPost = await prisma.posts.update({
+    where: { post_id: postId },
     data: { contents },
     select: {
-      postId: true,
+      post_id: true,
       contents: true,
-      createdAt: true,
+      created_at: true,
     },
   });
 
   console.log(`Post updated: postId:${postId} by userId:${userId}`);
-  return updatedPost;
+  return {
+    postId: updatedPost.post_id,
+    contents: updatedPost.contents,
+    createdAt: updatedPost.created_at,
+  };
 };
  
 // DELETE /api/posts/:postId 글 삭제 로직
 export const deletePost = async (postId, userId) => {
   // 게시글 존재 및 소유권 확인
-  const existingPost = await prisma.post.findUnique({
-    where: { postId },
-    select: { userId: true },
+  const existingPost = await prisma.posts.findUnique({
+    where: { post_id: postId },
+    select: { user_id: true },
   });
 
   if (!existingPost) {
     throw new Error('POST_NOT_FOUND');
   }
 
-  if (existingPost.userId !== userId) {
+  if (existingPost.user_id !== userId) {
     throw new Error('UNAUTHORIZED');
   }
 
-  await prisma.post.delete({
-    where: { postId },
+  await prisma.posts.delete({
+    where: { post_id: postId },
   });
 
   console.log(`Post deleted: postId:${postId} by userId:${userId}`);

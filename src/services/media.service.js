@@ -14,12 +14,12 @@ export const saveMediaInfo = async (postId, files) => {
   }
 
   const mediaData = files.map((file) => ({
-    postId,
+    post_id: postId,
     link: file.location, // S3 URL
     type: file.mimetype.startsWith('image/') ? 'image' : 'video',
   }));
 
-  const savedMedia = await prisma.mediaStorage.createMany({
+  const savedMedia = await prisma.media_storage.createMany({
     data: mediaData,
   });
 
@@ -29,20 +29,25 @@ export const saveMediaInfo = async (postId, files) => {
 
 // 게시글의 미디어 목록 조회
 export const getMediaByPostId = async (postId) => {
-  const media = await prisma.mediaStorage.findMany({
-    where: { postId },
+  const media = await prisma.media_storage.findMany({
+    where: { post_id: postId },
     select: {
-      mediaId: true,
+      media_id: true,
       link: true,
       type: true,
-      createdAt: true,
+      created_at: true,
     },
     orderBy: {
-      createdAt: 'asc',
+      created_at: 'asc',
     },
   });
 
-  return media;
+  return media.map((m) => ({
+    mediaId: m.media_id,
+    link: m.link,
+    type: m.type,
+    createdAt: m.created_at,
+  }));
 };
 
 // S3에서 파일 삭제 (CloudFront URL 또는 S3 URL 지원)
@@ -67,9 +72,9 @@ export const deleteMediaFromS3 = async (fileUrl) => {
 // 게시글 삭제 시 미디어도 함께 삭제
 export const deleteMediaByPostId = async (postId) => {
   // DB에서 미디어 정보 조회
-  const mediaList = await prisma.mediaStorage.findMany({
-    where: { postId },
-    select: { mediaId: true, link: true },
+  const mediaList = await prisma.media_storage.findMany({
+    where: { post_id: postId },
+    select: { media_id: true, link: true },
   });
 
   // S3에서 파일 삭제
@@ -78,14 +83,14 @@ export const deleteMediaByPostId = async (postId) => {
       try {
         await deleteMediaFromS3(media.link);
       } catch (error) {
-        console.error(`Failed to delete media ${media.mediaId}:`, error);
+        console.error(`Failed to delete media ${media.media_id}:`, error);
       }
     }
   }
 
   // DB에서 미디어 레코드 삭제
-  await prisma.mediaStorage.deleteMany({
-    where: { postId },
+  await prisma.media_storage.deleteMany({
+    where: { post_id: postId },
   });
 
   console.log(`Media deleted for postId:${postId}, count:${mediaList.length}`);

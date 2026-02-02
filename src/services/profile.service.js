@@ -6,28 +6,34 @@ import { prisma } from '../prismaClient.js';
 
 // GET /api/profile/:userId 프로필 조회 로직
 export const getProfile = async (userId) => {
-  const profile = await prisma.userAccount.findUnique({
-    where: { userId },
+  const profile = await prisma.users_account.findUnique({
+    where: { user_id: userId },
     select: {
-      userId: true,
+      user_id: true,
       username: true,
       nickname: true,
     },
   });
   console.log(`Profile retrieved: userId:${userId}`);
-  return profile;
+  return profile
+    ? {
+        userId: profile.user_id,
+        username: profile.username,
+        nickname: profile.nickname,
+      }
+    : null;
 };
 
 // POST /api/profile/location 위치 정보 저장 로직
 export const setLocation = async (userId, longitude, latitude) => {
-  await prisma.userLocation.update({
-    where: { userId },
+  await prisma.users_location.update({
+    where: { user_id: userId },
     data: {
       longitude,
       latitude,
     },
     select: {
-      userId: true,
+      user_id: true,
     },
   });
   console.log(`Location updated: userId:${userId} to (${longitude}, ${latitude})`);
@@ -35,42 +41,57 @@ export const setLocation = async (userId, longitude, latitude) => {
 
 // PATCH /api/profile 프로필 수정 로직
 export const updateProfile = async (userId, nickname) => {
-  const updatedProfile = await prisma.userAccount.update({
-    where: { userId },
+  const updatedProfile = await prisma.users_account.update({
+    where: { user_id: userId },
     data: { nickname },
     select: {
-      userId: true,
+      user_id: true,
       username: true,
       nickname: true,
     },
   });
   console.log(`Profile updated: userId:${userId}, nickname:${nickname}`);
-  return updatedProfile;
+  return {
+    userId: updatedProfile.user_id,
+    username: updatedProfile.username,
+    nickname: updatedProfile.nickname,
+  };
 };
 
 // GET /api/profile/posts 내 게시글 목록 조회 로직
 export const getUserPosts = async (userId) => {
-  const posts = await prisma.post.findMany({
-    where: { userId },
+  const posts = await prisma.posts.findMany({
+    where: { user_id: userId },
     select: {
-      postId: true,
+      post_id: true,
       contents: true,
-      createdAt: true,
+      created_at: true,
       longitude: true,
       latitude: true,
-      media: {
+      media_storage: {
         select: {
-          mediaId: true,
+          media_id: true,
           link: true,
           type: true,
         },
-        orderBy: { createdAt: 'asc' },
+        orderBy: { created_at: 'asc' },
       },
     },
     orderBy: {
-      createdAt: 'desc',
+      created_at: 'desc',
     },
   });
   console.log(`User posts retrieved: userId:${userId}, count:${posts.length}`);
-  return posts;
+  return posts.map((p) => ({
+    postId: p.post_id,
+    contents: p.contents,
+    createdAt: p.created_at,
+    longitude: p.longitude,
+    latitude: p.latitude,
+    media: p.media_storage.map((m) => ({
+      mediaId: m.media_id,
+      link: m.link,
+      type: m.type,
+    })),
+  }));
 };

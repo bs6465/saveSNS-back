@@ -1,4 +1,5 @@
 import { defineConfig, env } from '@prisma/config';
+import 'dotenv/config';
 
 export default defineConfig({
   // schema 파일 위치 지정
