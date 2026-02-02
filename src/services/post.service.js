@@ -62,18 +62,28 @@ export const getPosts = async (longitude, latitude, rangeMeters) => {
   `;
   console.log(`Posts retrieved: count:${nearbyPosts.length}`);
 
-  // 각 게시글의 미디어 정보 추가
+  // 각 게시글의 미디어, 좋아요 수, 댓글 수 추가
   for (const post of nearbyPosts) {
-    const media = await prisma.mediaStorage.findMany({
-      where: { postId: post.postId },
-      select: {
-        mediaId: true,
-        link: true,
-        type: true,
-      },
-      orderBy: { createdAt: 'asc' },
-    });
+    const [media, likeCount, commentCount] = await Promise.all([
+      prisma.mediaStorage.findMany({
+        where: { postId: post.postId },
+        select: {
+          mediaId: true,
+          link: true,
+          type: true,
+        },
+        orderBy: { createdAt: 'asc' },
+      }),
+      prisma.postLike.count({
+        where: { postId: post.postId },
+      }),
+      prisma.comment.count({
+        where: { postId: post.postId },
+      }),
+    ]);
     post.media = media;
+    post.likeCount = likeCount;
+    post.commentCount = commentCount;
   }
 
   return nearbyPosts;

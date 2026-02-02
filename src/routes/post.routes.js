@@ -1,6 +1,8 @@
 import express from 'express';
 const router = express.Router(); // express의 라우터 기능을 사용
 import * as postController from '../controllers/post.controller.js';
+import * as commentController from '../controllers/comment.controller.js';
+import * as likeController from '../controllers/like.controller.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
 import { validateBody, validateQuery, validateParams } from '../middleware/validate.js';
 import * as authSchema from '../schema/auth.schema.js';
@@ -25,5 +27,13 @@ router.put(
   postController.updatePost,
 ); // PUT /:postId 글 수정
 router.delete('/:postId', verifyToken, postController.deletePost); // DELETE /:postId 글 삭제
+
+// 댓글 관련 라우트
+router.post('/:postId/comments', verifyToken, commentController.createComment); // POST /:postId/comments 댓글 작성
+router.get('/:postId/comments', verifyToken, commentController.getComments); // GET /:postId/comments 댓글 목록 조회
+
+// 좋아요 관련 라우트
+router.post('/:postId/like', verifyToken, likeController.toggleLike); // POST /:postId/like 좋아요 토글
+router.get('/:postId/likes', verifyToken, likeController.getLikeInfo); // GET /:postId/likes 좋아요 정보 조회
 
 export default router;

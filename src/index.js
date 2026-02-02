@@ -38,6 +38,15 @@ app.use('/api/media', mediaRoutes);
 import airqualityRoutes from './routes/airquality.routes.js';
 app.use('/api/airquality', airqualityRoutes);
 
+import trafficRoutes from './routes/traffic.routes.js';
+app.use('/api/traffic', trafficRoutes);
+
+import newsRoutes from './routes/news.routes.js';
+app.use('/api/news', newsRoutes);
+
+import commentRoutes from './routes/comment.routes.js';
+app.use('/api/comments', commentRoutes);
+
 // ------------------------------------
 // Express와 WebSocket 서버 통합
 // ------------------------------------

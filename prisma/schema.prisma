@@ -28,6 +28,12 @@ model UserAccount {
   // 1:N 관계: 작성한 게시글
   posts Post[]
 
+  // 1:N 관계: 작성한 댓글
+  comments Comment[]
+
+  // 1:N 관계: 좋아요
+  likes PostLike[]
+
   @@map("users_account")
 }
 
@@ -65,10 +71,47 @@ model Post {
   location Unsupported("geometry(point, 4326)")?
 
   // 관계 설정
-  user  UserAccount    @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  media MediaStorage[]
+  user     UserAccount    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  media    MediaStorage[]
+  comments Comment[]
+  likes    PostLike[]
 
   @@map("posts")
+}
+
+/// 게시글 좋아요 (post_likes)
+model PostLike {
+  likeId    String   @id @default(dbgenerated("uuidv7()")) @map("like_id") @db.Uuid
+  postId    String   @map("post_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  // 관계 설정
+  post Post        @relation(fields: [postId], references: [postId], onDelete: Cascade)
+  user UserAccount @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@unique([postId, userId], map: "uq_post_like")
+  @@map("post_likes")
+}
+
+/// 댓글 (comments)
+model Comment {
+  commentId String    @id @default(dbgenerated("uuidv7()")) @map("comment_id") @db.Uuid
+  postId    String    @map("post_id") @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  parentId  String?   @map("parent_id") @db.Uuid
+  contents  String    @db.Text
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime  @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  // 관계 설정
+  post     Post        @relation(fields: [postId], references: [postId], onDelete: Cascade)
+  user     UserAccount @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  parent   Comment?    @relation("CommentReplies", fields: [parentId], references: [commentId], onDelete: Cascade)
+  replies  Comment[]   @relation("CommentReplies")
+
+  @@index([postId, createdAt])
+  @@map("comments")
 }
 
 /// 미디어 저장소 (media_storage)
@@ -175,6 +218,75 @@ model AirQuality {
   @@unique([stationName, dataTime], map: "uq_air_quality_station_time")
   @@index([sidoName, dataTime])
   @@map("air_quality")
+}
+
+/// 교통 돌발상황 정보 (traffic_incidents)
+model TrafficIncident {
+  id          String    @id @default(dbgenerated("uuidv7()")) @map("traffic_incident_id") @db.Uuid
+  incidentId  String    @unique @map("incident_id") @db.VarChar(50)
+  type        String    @map("type") @db.VarChar(20)
+  title       String    @map("title") @db.VarChar(200)
+  description String?   @map("description") @db.Text
+  roadName    String?   @map("road_name") @db.VarChar(100)
+  longitude   Float
+  latitude    Float
+  location    Unsupported("geometry(point, 4326)")?
+  startTime   DateTime  @map("start_time") @db.Timestamp(6)
+  endTime     DateTime? @map("end_time") @db.Timestamp(6)
+  severity    Int?      @map("severity") @db.SmallInt
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([longitude, latitude])
+  @@index([type, startTime])
+  @@map("traffic_incidents")
+}
+
+/// 도로 소통정보 (road_traffic)
+model RoadTraffic {
+  id        String   @id @default(dbgenerated("uuidv7()")) @map("road_traffic_id") @db.Uuid
+  roadName  String   @map("road_name") @db.VarChar(100)
+  linkId    String?  @map("link_id") @db.VarChar(50)
+  speed     Int?     @map("speed") @db.SmallInt
+  status    Int      @map("status") @db.SmallInt
+  longitude Float
+  latitude  Float
+  location  Unsupported("geometry(point, 4326)")?
+  dataTime  DateTime @map("data_time") @db.Timestamp(6)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@unique([roadName, dataTime], map: "uq_road_traffic")
+  @@index([longitude, latitude])
+  @@map("road_traffic")
+}
+
+/// 지역 뉴스 (local_news)
+model LocalNews {
+  id          String   @id @default(dbgenerated("uuidv7()")) @map("local_news_id") @db.Uuid
+  title       String   @map("title") @db.VarChar(300)
+  summary     String?  @map("summary") @db.Text
+  link        String   @map("link") @db.VarChar(500)
+  source      String   @map("source") @db.VarChar(50)
+  category    String   @map("category") @db.VarChar(20)
+  regionCode  String   @map("region_code") @db.VarChar(10)
+  publishedAt DateTime @map("published_at") @db.Timestamp(6)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([regionCode, publishedAt])
+  @@map("local_news")
+}
+
+/// 재난 알림 (disaster_alerts)
+model DisasterAlert {
+  id          String   @id @default(dbgenerated("uuidv7()")) @map("disaster_alert_id") @db.Uuid
+  msgCn       String   @map("msg_cn") @db.Text
+  rcptnRgnNm  String   @map("rcptn_rgn_nm") @db.VarChar(100)
+  regYmd      String   @map("reg_ymd") @db.VarChar(10)
+  emrgStepNm  String   @map("emrg_step_nm") @db.VarChar(20)
+  dstSeNm     String   @map("dst_se_nm") @db.VarChar(50)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@index([rcptnRgnNm, regYmd])
+  @@map("disaster_alerts")
 }
 
 // ------------------------------------------------------
