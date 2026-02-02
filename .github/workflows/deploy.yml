@@ -8,8 +8,7 @@ on:
 
 env:
   BACKEND_IMAGE_NAME: savesns-backend_image
-  SCRIPTS_IMAGE_NAME: savesns-script-getweather
-  SCRIPTS_SHORT_TERM_IMAGE_NAME: savesns-script-getweather-short-term-forecast
+  SCRIPTS_IMAGE_NAME: savesns-scripts
 
 jobs:
   build-and-deploy:
@@ -30,9 +29,8 @@ jobs:
               - 'package.json'
               - 'Dockerfile.backend'
             scripts:
-              - 'scripts/weather-ultra-short-term-forecast.py'
+              - 'scripts/**'
               - 'Dockerfile.scripts'
-              - 'scripts/weather-short-term-forecast.py'
 
       # (Docker 로그인, 빌드, 푸시 단계는 기존과 동일)
       - name: Login to Docker Hub
@@ -60,33 +58,25 @@ jobs:
           file: Dockerfile.scripts
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.SCRIPTS_IMAGE_NAME }}:${{ github.sha }}
-      - name: Build Scripts Short Term
-        if: steps.changes.outputs.scripts == 'true'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: Dockerfile.scripts
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.SCRIPTS_SHORT_TERM_IMAGE_NAME }}:${{ github.sha }}
 
       # 핵심: 바로 로컬 파일 수정해서 푸시
       - name: Update Kubernetes Manifest
         run: |
-          # 백엔드가 빌드되었을 때만 태그 교체 (if문 사용)
+          # 백엔드가 빌드되었을 때만 태그 교체
           if [ "${{ steps.changes.outputs.backend }}" == "true" ]; then
             echo "Updating Backend Manifest..."
             sed -i 's|image: .*/${{ env.BACKEND_IMAGE_NAME }}:.*|image: ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE_NAME }}:${{ github.sha }}|' k8s/deployment.yaml
           fi
 
-          # 스크립트가 빌드되었을 때만 태그 교체
+          # 스크립트가 빌드되었을 때만 태그 교체 (모든 CronJob 파일)
           if [ "${{ steps.changes.outputs.scripts }}" == "true" ]; then
-            echo "Updating Scripts Manifest..."
-            sed -i 's|image: .*/${{ env.SCRIPTS_IMAGE_NAME }}:.*|image: ${{ secrets.DOCKER_USERNAME }}/${{ env.SCRIPTS_IMAGE_NAME }}:${{ github.sha }}|' k8s/cronjob.yaml
-          fi
-
-          if [ "${{ steps.changes.outputs.scripts }}" == "true" ]; then
-            echo "Updating Scripts Short Term Manifest..."
-            sed -i 's|image: .*/${{ env.SCRIPTS_SHORT_TERM_IMAGE_NAME }}:.*|image: ${{ secrets.DOCKER_USERNAME }}/${{ env.SCRIPTS_SHORT_TERM_IMAGE_NAME }}:${{ github.sha }}|' k8s/weather-short-term-forecast.yaml
+            echo "Updating Scripts Manifests..."
+            for file in k8s/cronjob.yaml k8s/weather-short-term-forecast.yaml k8s/data-collection-cronjobs.yaml; do
+              if [ -f "$file" ]; then
+                sed -i 's|image: .*/savesns-scripts:.*|image: ${{ secrets.DOCKER_USERNAME }}/${{ env.SCRIPTS_IMAGE_NAME }}:${{ github.sha }}|' "$file"
+                sed -i 's|image: .*/savesns-script-.*:.*|image: ${{ secrets.DOCKER_USERNAME }}/${{ env.SCRIPTS_IMAGE_NAME }}:${{ github.sha }}|' "$file"
+              fi
+            done
           fi
 
           git config --global user.email "github-actions@github.com"

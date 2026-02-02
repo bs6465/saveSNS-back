@@ -1,0 +1,224 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: air-quality
+spec:
+  schedule: '5 * * * *' # 매시 5분
+  revisionHistoryLimit: 2
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: air-quality
+              image: bs6465/savesns-scripts:latest
+              imagePullPolicy: Always
+              command: ['python', 'air-quality.py']
+
+              envFrom:
+                - configMapRef:
+                    name: backend-config
+
+              env:
+                - name: AIR_QUALITY_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: AIR_QUALITY_API_KEY
+
+                - name: DB_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: DB_USER
+                - name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: DB_PASSWORD
+
+          restartPolicy: OnFailure
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: disaster-alert
+spec:
+  schedule: '*/10 * * * *' # 10분마다
+  revisionHistoryLimit: 2
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: disaster-alert
+              image: bs6465/savesns-scripts:latest
+              imagePullPolicy: Always
+              command: ['python', 'disaster-alert.py']
+
+              envFrom:
+                - configMapRef:
+                    name: backend-config
+
+              env:
+                - name: DISASTER_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: DISASTER_API_KEY
+
+                - name: DB_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: DB_USER
+                - name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: DB_PASSWORD
+
+          restartPolicy: OnFailure
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: traffic-incidents
+spec:
+  schedule: '*/15 * * * *' # 15분마다
+  revisionHistoryLimit: 2
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: traffic-incidents
+              image: bs6465/savesns-scripts:latest
+              imagePullPolicy: Always
+              command: ['python', 'traffic-incidents.py']
+
+              envFrom:
+                - configMapRef:
+                    name: backend-config
+
+              env:
+                - name: ITS_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: ITS_API_KEY
+
+                - name: DB_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: DB_USER
+                - name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: DB_PASSWORD
+
+          restartPolicy: OnFailure
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: road-traffic
+spec:
+  schedule: '*/30 * * * *' # 30분마다
+  revisionHistoryLimit: 2
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: road-traffic
+              image: bs6465/savesns-scripts:latest
+              imagePullPolicy: Always
+              command: ['python', 'road-traffic.py']
+
+              envFrom:
+                - configMapRef:
+                    name: backend-config
+
+              env:
+                - name: ITS_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: ITS_API_KEY
+
+                - name: DB_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: DB_USER
+                - name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: DB_PASSWORD
+
+          restartPolicy: OnFailure
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: local-news
+spec:
+  schedule: '0 */2 * * *' # 2시간마다
+  revisionHistoryLimit: 2
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: local-news
+              image: bs6465/savesns-scripts:latest
+              imagePullPolicy: Always
+              command: ['python', 'local-news.py']
+
+              envFrom:
+                - configMapRef:
+                    name: backend-config
+
+              env:
+                - name: NAVER_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: NAVER_CLIENT_ID
+                - name: NAVER_CLIENT_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: NAVER_CLIENT_SECRET
+
+                - name: DB_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: DB_USER
+                - name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: DB_PASSWORD
+
+          restartPolicy: OnFailure
