@@ -27,7 +27,7 @@ export const getLocalNewsByUserId = async (userId, limit = 10) => {
   // 시도명을 지역코드로 변환 (간단한 매핑)
   const regionCode = sidoName.substring(0, 2); // 예: "서울특별시" → "서울"
 
-  const news = await prisma.local_news.findMany({
+  const news = await prisma.localNews.findMany({
     where: {
       regionCode: {
         startsWith: regionCode,
@@ -64,7 +64,7 @@ export const getDisasterAlertsByUserId = async (userId, limit = 5) => {
   oneDayAgo.setDate(oneDayAgo.getDate() - 1);
   const oneDayAgoStr = oneDayAgo.toISOString().split('T')[0].replace(/-/g, '/');
 
-  const alerts = await prisma.disaster_alert.findMany({
+  const alerts = await prisma.disasterAlert.findMany({
     where: {
       rcptnRgnNm: {
         contains: sidoName.substring(0, 2),
@@ -93,7 +93,7 @@ export const getDisasterAlertsByUserId = async (userId, limit = 5) => {
 
 // 전체 지역 뉴스 조회 (지역 필터 없음)
 export const getAllLocalNews = async (limit = 20) => {
-  const news = await prisma.local_news.findMany({
+  const news = await prisma.localNews.findMany({
     orderBy: {
       publishedAt: 'desc',
     },
@@ -119,7 +119,7 @@ export const getAllDisasterAlerts = async (limit = 10) => {
   oneDayAgo.setDate(oneDayAgo.getDate() - 1);
   const oneDayAgoStr = oneDayAgo.toISOString().split('T')[0].replace(/-/g, '/');
 
-  const alerts = await prisma.disaster_alert.findMany({
+  const alerts = await prisma.disasterAlert.findMany({
     where: {
       regYmd: {
         gte: oneDayAgoStr,
@@ -150,7 +150,7 @@ export const getNewsSummaryByUserId = async (userId) => {
 
   // 최근 뉴스 3개
   const recentNews = regionCode
-    ? await prisma.local_news.findMany({
+    ? await prisma.localNews.findMany({
         where: {
           regionCode: {
             startsWith: regionCode,
@@ -175,7 +175,7 @@ export const getNewsSummaryByUserId = async (userId) => {
   const oneDayAgoStr = oneDayAgo.toISOString().split('T')[0].replace(/-/g, '/');
 
   const activeAlerts = regionCode
-    ? await prisma.disaster_alert.findMany({
+    ? await prisma.disasterAlert.findMany({
         where: {
           rcptnRgnNm: {
             contains: regionCode,

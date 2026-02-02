@@ -81,7 +81,7 @@ export const getPosts = async (longitude, latitude, rangeMeters) => {
         where: { postId: post.postId },
       }),
     ]);
-    post.media = media.map(m => ({ mediaId: m.media_id, link: m.link, type: m.type }));
+    post.media = media.map((m) => ({ mediaId: m.media_id, link: m.link, type: m.type }));
     post.likeCount = likeCount;
     post.commentCount = commentCount;
   }
@@ -103,7 +103,7 @@ export const getAllPosts = async () => {
       created_at: 'desc',
     },
   });
-  return posts.map(p => ({
+  return posts.map((p) => ({
     postId: p.post_id,
     userId: p.user_id,
     contents: p.contents,
@@ -151,7 +151,7 @@ export const getPostById = async (postId) => {
       userId: post.users_account.user_id,
       nickname: post.users_account.nickname,
     },
-    media: post.media_storage.map(m => ({
+    media: post.media_storage.map((m) => ({
       mediaId: m.media_id,
       link: m.link,
       type: m.type,
@@ -193,7 +193,7 @@ export const updatePost = async (postId, userId, contents) => {
     createdAt: updatedPost.created_at,
   };
 };
- 
+
 // DELETE /api/posts/:postId 글 삭제 로직
 export const deletePost = async (postId, userId) => {
   // 게시글 존재 및 소유권 확인
