@@ -4,8 +4,8 @@ metadata:
   name: air-quality
 spec:
   schedule: '5 * * * *' # 매시 5분
-  revisionHistoryLimit: 2
-  successfulJobsHistoryLimit: 3
+  revisionHistoryLimit: 1
+  successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 1
 
   jobTemplate:
@@ -46,9 +46,9 @@ kind: CronJob
 metadata:
   name: disaster-alert
 spec:
-  schedule: '*/10 * * * *' # 10분마다
-  revisionHistoryLimit: 2
-  successfulJobsHistoryLimit: 3
+  schedule: '*/30 * * * *' # 10분마다
+  revisionHistoryLimit: 1
+  successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 1
 
   jobTemplate:
@@ -89,9 +89,9 @@ kind: CronJob
 metadata:
   name: traffic-incidents
 spec:
-  schedule: '*/15 * * * *' # 15분마다
-  revisionHistoryLimit: 2
-  successfulJobsHistoryLimit: 3
+  schedule: '*/30 * * * *' # 15분마다
+  revisionHistoryLimit: 1
+  successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 1
 
   jobTemplate:
@@ -133,8 +133,8 @@ metadata:
   name: road-traffic
 spec:
   schedule: '*/30 * * * *' # 30분마다
-  revisionHistoryLimit: 2
-  successfulJobsHistoryLimit: 3
+  revisionHistoryLimit: 1
+  successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 1
 
   jobTemplate:
@@ -176,8 +176,8 @@ metadata:
   name: local-news
 spec:
   schedule: '0 */2 * * *' # 2시간마다
-  revisionHistoryLimit: 2
-  successfulJobsHistoryLimit: 3
+  revisionHistoryLimit: 1
+  successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 1
 
   jobTemplate:

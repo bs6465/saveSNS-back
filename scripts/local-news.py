@@ -111,7 +111,7 @@ async def fetch_news_for_region(client, region_code, keywords, sem):
     print(f"Fetched {len(all_records)} news for {region_code}")
     return all_records
 
-
+ 
 async def main():
     if not NAVER_CLIENT_ID or not NAVER_CLIENT_SECRET:
         print("Error: NAVER_CLIENT_ID or NAVER_CLIENT_SECRET environment variable not set")

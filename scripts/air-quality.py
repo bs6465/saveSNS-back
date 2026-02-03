@@ -149,7 +149,7 @@ async def fetch_forecast(client, search_date, inform_code, sem):
             print(f"Error fetching {inform_code} for {search_date}: {e}")
             return []
 
-
+ 
 async def main():
     if not AIR_QUALITY_API_KEY:
         print("Error: AIR_QUALITY_API_KEY environment variable not set")

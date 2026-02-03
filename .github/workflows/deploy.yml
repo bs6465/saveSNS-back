@@ -130,21 +130,20 @@ jobs:
           # 스크립트가 빌드되었을 때만 태그 교체
           if [ "${{ steps.changes.outputs.scripts }}" == "true" ]; then
             echo "Updating Scripts Manifests..."
-            TAG="${{ github.sha }}"
             DOCKER_USER="${{ secrets.DOCKER_USERNAME }}"
 
             # cronjob.yaml - weather-ultra-short-term-forecast
-            sed -i "s|image: .*/savesns-script-weather-ultra:.*|image: ${DOCKER_USER}/savesns-script-weather-ultra:${TAG}|" k8s/cronjob.yaml
+            sed -i "s|image: .*/savesns-script-weather-ultra:.*|image: ${DOCKER_USER}/savesns-script-weather-ultra:${{ github.sha }}|" k8s/cronjob.yaml
 
             # weather-short-term-forecast.yaml
-            sed -i "s|image: .*/savesns-script-weather-short:.*|image: ${DOCKER_USER}/savesns-script-weather-short:${TAG}|" k8s/weather-short-term-forecast.yaml
+            sed -i "s|image: .*/savesns-script-weather-short:.*|image: ${DOCKER_USER}/savesns-script-weather-short:${{ github.sha }}|" k8s/weather-short-term-forecast.yaml
 
             # data-collection-cronjobs.yaml - 각 스크립트별 이미지 교체
-            sed -i "s|image: .*/savesns-script-air-quality:.*|image: ${DOCKER_USER}/savesns-script-air-quality:${TAG}|" k8s/data-collection-cronjobs.yaml
-            sed -i "s|image: .*/savesns-script-disaster-alert:.*|image: ${DOCKER_USER}/savesns-script-disaster-alert:${TAG}|" k8s/data-collection-cronjobs.yaml
-            sed -i "s|image: .*/savesns-script-traffic-incidents:.*|image: ${DOCKER_USER}/savesns-script-traffic-incidents:${TAG}|" k8s/data-collection-cronjobs.yaml
-            sed -i "s|image: .*/savesns-script-road-traffic:.*|image: ${DOCKER_USER}/savesns-script-road-traffic:${TAG}|" k8s/data-collection-cronjobs.yaml
-            sed -i "s|image: .*/savesns-script-local-news:.*|image: ${DOCKER_USER}/savesns-script-local-news:${TAG}|" k8s/data-collection-cronjobs.yaml
+            sed -i "s|image: .*/savesns-script-air-quality:.*|image: ${DOCKER_USER}/savesns-script-air-quality:${{ github.sha }}|" k8s/data-collection-cronjobs.yaml
+            sed -i "s|image: .*/savesns-script-disaster-alert:.*|image: ${DOCKER_USER}/savesns-script-disaster-alert:${{ github.sha }}|" k8s/data-collection-cronjobs.yaml
+            sed -i "s|image: .*/savesns-script-traffic-incidents:.*|image: ${DOCKER_USER}/savesns-script-traffic-incidents:${{ github.sha }}|" k8s/data-collection-cronjobs.yaml
+            sed -i "s|image: .*/savesns-script-road-traffic:.*|image: ${DOCKER_USER}/savesns-script-road-traffic:${{ github.sha }}|" k8s/data-collection-cronjobs.yaml
+            sed -i "s|image: .*/savesns-script-local-news:.*|image: ${DOCKER_USER}/savesns-script-local-news:${{ github.sha }}|" k8s/data-collection-cronjobs.yaml
           fi
 
           git config --global user.email "github-actions@github.com"

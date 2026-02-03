@@ -140,7 +140,7 @@ async def fetch_all_alerts(client):
 
     return all_records
 
- 
+
 async def main():
     if not DISASTER_API_KEY:
         print("Error: DISASTER_API_KEY environment variable not set")
