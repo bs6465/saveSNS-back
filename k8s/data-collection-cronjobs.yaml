@@ -14,9 +14,8 @@ spec:
         spec:
           containers:
             - name: air-quality
-              image: bs6465/savesns-scripts:7a9c82302b718b85604b0b718c75f0cd40b3aaf1
+              image: bs6465/savesns-script-air-quality:7a9c82302b718b85604b0b718c75f0cd40b3aaf1
               imagePullPolicy: Always
-              command: ['python', 'air-quality.py']
 
               envFrom:
                 - configMapRef:
@@ -58,9 +57,8 @@ spec:
         spec:
           containers:
             - name: disaster-alert
-              image: bs6465/savesns-scripts:7a9c82302b718b85604b0b718c75f0cd40b3aaf1
+              image: bs6465/savesns-script-disaster-alert:7a9c82302b718b85604b0b718c75f0cd40b3aaf1
               imagePullPolicy: Always
-              command: ['python', 'disaster-alert.py']
 
               envFrom:
                 - configMapRef:
@@ -102,9 +100,8 @@ spec:
         spec:
           containers:
             - name: traffic-incidents
-              image: bs6465/savesns-scripts:7a9c82302b718b85604b0b718c75f0cd40b3aaf1
+              image: bs6465/savesns-script-traffic-incidents:7a9c82302b718b85604b0b718c75f0cd40b3aaf1
               imagePullPolicy: Always
-              command: ['python', 'traffic-incidents.py']
 
               envFrom:
                 - configMapRef:
@@ -146,9 +143,8 @@ spec:
         spec:
           containers:
             - name: road-traffic
-              image: bs6465/savesns-scripts:7a9c82302b718b85604b0b718c75f0cd40b3aaf1
+              image: bs6465/savesns-script-road-traffic:7a9c82302b718b85604b0b718c75f0cd40b3aaf1
               imagePullPolicy: Always
-              command: ['python', 'road-traffic.py']
 
               envFrom:
                 - configMapRef:
@@ -190,9 +186,8 @@ spec:
         spec:
           containers:
             - name: local-news
-              image: bs6465/savesns-scripts:7a9c82302b718b85604b0b718c75f0cd40b3aaf1
+              image: bs6465/savesns-script-local-news:7a9c82302b718b85604b0b718c75f0cd40b3aaf1
               imagePullPolicy: Always
-              command: ['python', 'local-news.py']
 
               envFrom:
                 - configMapRef:

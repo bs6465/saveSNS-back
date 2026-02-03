@@ -8,7 +8,6 @@ on:
 
 env:
   BACKEND_IMAGE_NAME: savesns-backend_image
-  SCRIPTS_IMAGE_NAME: savesns-scripts
 
 jobs:
   build-and-deploy:
@@ -19,7 +18,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      # [추가] 1. 어디가 바뀌었는지 감지하는 단계
+      # 어디가 바뀌었는지 감지하는 단계
       - uses: dorny/paths-filter@v2
         id: changes
         with:
@@ -32,14 +31,13 @@ jobs:
               - 'scripts/**'
               - 'Dockerfile.scripts'
 
-      # (Docker 로그인, 빌드, 푸시 단계는 기존과 동일)
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # [수정] 2. 백엔드 쪽 파일이 변했을 때만('true') 실행
+      # 백엔드 빌드
       - name: Build Backend
         if: steps.changes.outputs.backend == 'true'
         uses: docker/build-push-action@v4
@@ -49,34 +47,104 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE_NAME }}:${{ github.sha }}
 
-      # [수정] 3. 스크립트 쪽 파일이 변했을 때만('true') 실행
-      - name: Build Scripts
+      # 각 스크립트별 독립 이미지 빌드
+      - name: Build Script - weather-ultra-short-term-forecast
         if: steps.changes.outputs.scripts == 'true'
         uses: docker/build-push-action@v4
         with:
           context: .
           file: Dockerfile.scripts
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.SCRIPTS_IMAGE_NAME }}:${{ github.sha }}
+          build-args: SCRIPT_NAME=weather-ultra-short-term-forecast
+          tags: ${{ secrets.DOCKER_USERNAME }}/savesns-script-weather-ultra:${{ github.sha }}
 
-      # 핵심: 바로 로컬 파일 수정해서 푸시
+      - name: Build Script - weather-short-term-forecast
+        if: steps.changes.outputs.scripts == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Dockerfile.scripts
+          push: true
+          build-args: SCRIPT_NAME=weather-short-term-forecast
+          tags: ${{ secrets.DOCKER_USERNAME }}/savesns-script-weather-short:${{ github.sha }}
+
+      - name: Build Script - air-quality
+        if: steps.changes.outputs.scripts == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Dockerfile.scripts
+          push: true
+          build-args: SCRIPT_NAME=air-quality
+          tags: ${{ secrets.DOCKER_USERNAME }}/savesns-script-air-quality:${{ github.sha }}
+
+      - name: Build Script - disaster-alert
+        if: steps.changes.outputs.scripts == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Dockerfile.scripts
+          push: true
+          build-args: SCRIPT_NAME=disaster-alert
+          tags: ${{ secrets.DOCKER_USERNAME }}/savesns-script-disaster-alert:${{ github.sha }}
+
+      - name: Build Script - traffic-incidents
+        if: steps.changes.outputs.scripts == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Dockerfile.scripts
+          push: true
+          build-args: SCRIPT_NAME=traffic-incidents
+          tags: ${{ secrets.DOCKER_USERNAME }}/savesns-script-traffic-incidents:${{ github.sha }}
+
+      - name: Build Script - road-traffic
+        if: steps.changes.outputs.scripts == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Dockerfile.scripts
+          push: true
+          build-args: SCRIPT_NAME=road-traffic
+          tags: ${{ secrets.DOCKER_USERNAME }}/savesns-script-road-traffic:${{ github.sha }}
+
+      - name: Build Script - local-news
+        if: steps.changes.outputs.scripts == 'true'
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Dockerfile.scripts
+          push: true
+          build-args: SCRIPT_NAME=local-news
+          tags: ${{ secrets.DOCKER_USERNAME }}/savesns-script-local-news:${{ github.sha }}
+
+      # Kubernetes 매니페스트 업데이트
       - name: Update Kubernetes Manifest
         run: |
           # 백엔드가 빌드되었을 때만 태그 교체
           if [ "${{ steps.changes.outputs.backend }}" == "true" ]; then
             echo "Updating Backend Manifest..."
-            sed -i 's|image: .*/${{ env.BACKEND_IMAGE_NAME }}:.*|image: ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE_NAME }}:${{ github.sha }}|' k8s/deployment.yaml
+            sed -i "s|image: .*/${{ env.BACKEND_IMAGE_NAME }}:.*|image: ${{ secrets.DOCKER_USERNAME }}/${{ env.BACKEND_IMAGE_NAME }}:${{ github.sha }}|" k8s/deployment.yaml
           fi
 
-          # 스크립트가 빌드되었을 때만 태그 교체 (모든 CronJob 파일)
+          # 스크립트가 빌드되었을 때만 태그 교체
           if [ "${{ steps.changes.outputs.scripts }}" == "true" ]; then
             echo "Updating Scripts Manifests..."
-            for file in k8s/cronjob.yaml k8s/weather-short-term-forecast.yaml k8s/data-collection-cronjobs.yaml; do
-              if [ -f "$file" ]; then
-                sed -i 's|image: .*/savesns-scripts:.*|image: ${{ secrets.DOCKER_USERNAME }}/${{ env.SCRIPTS_IMAGE_NAME }}:${{ github.sha }}|' "$file"
-                sed -i 's|image: .*/savesns-script-.*:.*|image: ${{ secrets.DOCKER_USERNAME }}/${{ env.SCRIPTS_IMAGE_NAME }}:${{ github.sha }}|' "$file"
-              fi
-            done
+            TAG="${{ github.sha }}"
+            DOCKER_USER="${{ secrets.DOCKER_USERNAME }}"
+
+            # cronjob.yaml - weather-ultra-short-term-forecast
+            sed -i "s|image: .*/savesns-script-weather-ultra:.*|image: ${DOCKER_USER}/savesns-script-weather-ultra:${TAG}|" k8s/cronjob.yaml
+
+            # weather-short-term-forecast.yaml
+            sed -i "s|image: .*/savesns-script-weather-short:.*|image: ${DOCKER_USER}/savesns-script-weather-short:${TAG}|" k8s/weather-short-term-forecast.yaml
+
+            # data-collection-cronjobs.yaml - 각 스크립트별 이미지 교체
+            sed -i "s|image: .*/savesns-script-air-quality:.*|image: ${DOCKER_USER}/savesns-script-air-quality:${TAG}|" k8s/data-collection-cronjobs.yaml
+            sed -i "s|image: .*/savesns-script-disaster-alert:.*|image: ${DOCKER_USER}/savesns-script-disaster-alert:${TAG}|" k8s/data-collection-cronjobs.yaml
+            sed -i "s|image: .*/savesns-script-traffic-incidents:.*|image: ${DOCKER_USER}/savesns-script-traffic-incidents:${TAG}|" k8s/data-collection-cronjobs.yaml
+            sed -i "s|image: .*/savesns-script-road-traffic:.*|image: ${DOCKER_USER}/savesns-script-road-traffic:${TAG}|" k8s/data-collection-cronjobs.yaml
+            sed -i "s|image: .*/savesns-script-local-news:.*|image: ${DOCKER_USER}/savesns-script-local-news:${TAG}|" k8s/data-collection-cronjobs.yaml
           fi
 
           git config --global user.email "github-actions@github.com"

@@ -1,14 +1,17 @@
 # Dockerfile.scripts
-FROM python:3.14.2-slim-trixie
+FROM python:3.12-slim
+
+ARG SCRIPT_NAME
+ENV SCRIPT_NAME=${SCRIPT_NAME}
 
 WORKDIR /app
 
 # 라이브러리 설치
 COPY scripts/requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# 스크립트 파일들 복사
-COPY scripts/ .
+# 특정 스크립트 파일만 복사
+COPY scripts/${SCRIPT_NAME}.py .
 
-# 기본 실행 명령어는 없음 (Kubernetes가 지정해서 실행할 거임)
-CMD ["python", "--version"]
+# 기본 실행 명령어
+CMD ["sh", "-c", "python ${SCRIPT_NAME}.py"]
