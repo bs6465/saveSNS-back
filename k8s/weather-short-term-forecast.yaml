@@ -16,7 +16,7 @@ spec:
         spec:
           containers:
             - name: weather-short-term-forecast
-              image: bs6465/savesns-scripts:93acab582716ca4f48836d12539d18557a84d3ef
+              image: bs6465/savesns-scripts:da10be5b297ebcaa1debf2155cc0174817106576
 
               imagePullPolicy: Always
 
