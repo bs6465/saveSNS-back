@@ -127,8 +127,16 @@ async def fetch_and_process_data(client, row, sem):
             return []
 
 async def main():
-    conn = await asyncpg.connect(DB_URL)
-    
+    if not WEATHER_API_KEY:
+        print("Error: WEATHER_API_KEY environment variable not set")
+        return  # 환경변수 없으면 정상 종료 (재시도 방지)
+
+    try:
+        conn = await asyncpg.connect(DB_URL)
+    except Exception as e:
+        print(f"Error connecting to database: {e}")
+        return  # DB 연결 실패 시 정상 종료 (재시도 방지)
+
     try:
         # View에서 대상 조회
         rows = await conn.fetch("SELECT nx, ny FROM view_unique_user_grids") # 뷰 이름 확인 필요
@@ -205,7 +213,11 @@ async def main():
             """
         await conn.execute(query)
         print("Done. Old records cleaned up.")
-        
+
+    except Exception as e:
+        print(f"Error during execution: {e}")
+        # 에러 발생해도 정상 종료 (Kubernetes 재시도 방지)
+
     finally:
         await conn.close()
 

@@ -12,7 +12,7 @@ API: https://www.safetydata.go.kr/disaster-data/view?dataSn=228
 DB 테이블: disaster_alert
 """
 
-DISASTER_API_KEY = os.getenv('DISASTER_API_KEY').strip()
+DISASTER_API_KEY = os.getenv('DISASTER_API_KEY', '').strip()
 
 DB_USER = os.getenv('DB_USER')
 DB_NAME = os.getenv('DB_NAME')
@@ -144,11 +144,13 @@ async def fetch_all_alerts(client):
 async def main():
     if not DISASTER_API_KEY:
         print("Error: DISASTER_API_KEY environment variable not set")
-        return
+        return  # 환경변수 없으면 정상 종료 (재시도 방지)
 
-    print(f"DISASTER_API_KEY: {DISASTER_API_KEY}")
-    print(f"DB_URL: {DB_URL}")
-    conn = await asyncpg.connect(DB_URL)
+    try:
+        conn = await asyncpg.connect(DB_URL)
+    except Exception as e:
+        print(f"Error connecting to database: {e}")
+        return  # DB 연결 실패 시 정상 종료 (재시도 방지)
 
     try:
         async with httpx.AsyncClient() as client:
@@ -195,6 +197,10 @@ async def main():
             WHERE crt_dt < NOW() - INTERVAL '30 days';
         """)
         print("Done.")
+
+    except Exception as e:
+        print(f"Error during execution: {e}")
+        # 에러 발생해도 정상 종료 (Kubernetes 재시도 방지)
 
     finally:
         await conn.close()

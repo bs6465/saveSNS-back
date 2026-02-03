@@ -12,7 +12,7 @@ API: https://www.data.go.kr/data/15073861/openapi.do
 DB 테이블: air_quality_forecast
 """
 
-AIR_QUALITY_API_KEY = os.getenv('AIR_QUALITY_API_KEY').strip()
+AIR_QUALITY_API_KEY = os.getenv('AIR_QUALITY_API_KEY', '').strip()
 
 DB_USER = os.getenv('DB_USER')
 DB_NAME = os.getenv('DB_NAME')
@@ -153,12 +153,13 @@ async def fetch_forecast(client, search_date, inform_code, sem):
 async def main():
     if not AIR_QUALITY_API_KEY:
         print("Error: AIR_QUALITY_API_KEY environment variable not set")
-        return
+        return  # 환경변수 없으면 정상 종료 (재시도 방지)
 
-    print(f"AIR_QUALITY_API_KEY: {AIR_QUALITY_API_KEY}")
-    print(f"DB_URL: {DB_URL}")
-
-    conn = await asyncpg.connect(DB_URL)
+    try:
+        conn = await asyncpg.connect(DB_URL)
+    except Exception as e:
+        print(f"Error connecting to database: {e}")
+        return  # DB 연결 실패 시 정상 종료 (재시도 방지)
 
     try:
         sem = asyncio.Semaphore(5)  # 동시 요청 제한
@@ -221,6 +222,10 @@ async def main():
             WHERE forecast_date < NOW() - INTERVAL '7 days';
         """)
         print("Done.")
+
+    except Exception as e:
+        print(f"Error during execution: {e}")
+        # 에러 발생해도 정상 종료 (Kubernetes 재시도 방지)
 
     finally:
         await conn.close()

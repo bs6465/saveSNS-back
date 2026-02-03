@@ -113,16 +113,22 @@ async def fetch_traffic_incidents(client):
 async def main():
     if not ITS_API_KEY:
         print("Error: ITS_API_KEY environment variable not set")
-        return
+        return  # 환경변수 없으면 정상 종료 (재시도 방지)
 
-    conn = await asyncpg.connect(DB_URL)
+    try:
+        conn = await asyncpg.connect(DB_URL)
+    except Exception as e:
+        print(f"Error connecting to database: {e}")
+        return  # DB 연결 실패 시 정상 종료 (재시도 방지)
 
     try:
         async with httpx.AsyncClient() as client:
             print("Fetching traffic incidents...")
             records = await fetch_traffic_incidents(client)
 
-        if records:
+        if not records:
+            print("No records fetched, skipping DB operations")
+        else:
             print(f"Upserting {len(records)} records to database...")
 
             query = """
@@ -168,6 +174,10 @@ async def main():
             WHERE end_time IS NOT NULL AND end_time < NOW() - INTERVAL '1 day';
         """)
         print("Done.")
+
+    except Exception as e:
+        print(f"Error during execution: {e}")
+        # 에러 발생해도 정상 종료 (Kubernetes 재시도 방지)
 
     finally:
         await conn.close()

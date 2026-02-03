@@ -124,50 +124,60 @@ async def fetch_road_traffic(client):
 async def main():
     if not ITS_API_KEY:
         print("Error: ITS_API_KEY environment variable not set")
-        return
+        return  # 환경변수 없으면 정상 종료 (재시도 방지)
 
-    conn = await asyncpg.connect(DB_URL)
+    try:
+        conn = await asyncpg.connect(DB_URL)
+    except Exception as e:
+        print(f"Error connecting to database: {e}")
+        return  # DB 연결 실패 시 정상 종료 (재시도 방지)
 
     try:
         async with httpx.AsyncClient() as client:
             print("Fetching road traffic data...")
             records = await fetch_road_traffic(client)
 
-        if records:
-            print(f"Inserting {len(records)} records to database...")
+        if not records:
+            print("No records fetched, skipping DB insert")
+            return  # 데이터 없으면 정상 종료
 
-            # 기존 데이터 삭제 후 새 데이터 삽입 (전체 갱신)
-            await conn.execute("DELETE FROM road_traffic WHERE data_time < NOW() - INTERVAL '1 hour';")
+        print(f"Inserting {len(records)} records to database...")
 
-            query = """
-                INSERT INTO public.road_traffic (
-                    road_name, link_id, speed, status,
-                    longitude, latitude, location, data_time
-                ) VALUES (
-                    $1, $2, $3, $4, $5, $6,
-                    ST_SetSRID(ST_MakePoint($5, $6), 4326),
-                    $7
-                );
-            """
+        # 기존 데이터 삭제 후 새 데이터 삽입 (전체 갱신)
+        await conn.execute("DELETE FROM road_traffic WHERE data_time < NOW() - INTERVAL '1 hour';")
 
-            params_list = [
-                (
-                    r['road_name'], r['link_id'], r['speed'], r['status'],
-                    r['longitude'], r['latitude'], r['data_time']
-                )
-                for r in records
-            ]
+        query = """
+            INSERT INTO public.road_traffic (
+                road_name, link_id, speed, status,
+                longitude, latitude, location, data_time
+            ) VALUES (
+                $1, $2, $3, $4, $5, $6,
+                ST_SetSRID(ST_MakePoint($5, $6), 4326),
+                $7
+            );
+        """
 
-            # 배치 삽입 (1000개 단위)
-            batch_size = 1000
-            for i in range(0, len(params_list), batch_size):
-                batch = params_list[i:i + batch_size]
-                await conn.executemany(query, batch)
-                print(f"Inserted batch {i // batch_size + 1}/{(len(params_list) + batch_size - 1) // batch_size}")
+        params_list = [
+            (
+                r['road_name'], r['link_id'], r['speed'], r['status'],
+                r['longitude'], r['latitude'], r['data_time']
+            )
+            for r in records
+        ]
 
-            print(f"Total inserted: {len(params_list)} records")
+        # 배치 삽입 (1000개 단위)
+        batch_size = 1000
+        for i in range(0, len(params_list), batch_size):
+            batch = params_list[i:i + batch_size]
+            await conn.executemany(query, batch)
+            print(f"Inserted batch {i // batch_size + 1}/{(len(params_list) + batch_size - 1) // batch_size}")
 
+        print(f"Total inserted: {len(params_list)} records")
         print("Done.")
+
+    except Exception as e:
+        print(f"Error during execution: {e}")
+        # 에러 발생해도 정상 종료 (Kubernetes 재시도 방지)
 
     finally:
         await conn.close()
