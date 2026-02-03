@@ -201,17 +201,34 @@ model local_news {
   @@index([regionCode, publishedAt], map: "idx_local_news_region")
 }
 
+/// 대기질 예보통보 모델
+model air_quality_forecast {
+  id             String   @id(map: "air_quality_forecast_pk") @default(dbgenerated("uuidv7()")) @db.Uuid
+  sido_name      String   @db.VarChar(50)  // 시도명
+  inform_code    String   @db.VarChar(10)  // 통보코드 (PM10, PM25, O3)
+  forecast_date  DateTime @db.Timestamp(6) // 예보 날짜
+  publish_time   DateTime @db.Timestamp(6) // 발표 시간
+  grade          Int      @db.SmallInt     // 등급 (1:좋음, 2:보통, 3:나쁨, 4:매우나쁨)
+  inform_cause   String?                   // 발생 원인
+  inform_overall String?                   // 예보 개황
+  created_at     DateTime @default(now()) @db.Timestamp(6)
+
+  @@unique([sido_name, inform_code, forecast_date], map: "uq_air_quality_forecast")
+  @@index([sido_name, forecast_date], map: "idx_air_quality_forecast_sido")
+}
+
 /// 재난 알림 모델
 model disaster_alert {
-  id         String   @id(map: "disaster_alert_pk") @default(dbgenerated("uuidv7()")) @db.Uuid
-  msgCn      String   // 메시지 내용
-  rcptnRgnNm String   @db.VarChar(200) // 수신 지역명
-  regYmd     String   @db.VarChar(20)  // 등록일자
-  emrgStepNm String   @db.VarChar(50)  // 긴급단계
-  dstSeNm    String   @db.VarChar(100) // 재해구분명
-  createdAt  DateTime @default(now()) @db.Timestamp(6)
+  id           String    @id(map: "disaster_alert_pk") @default(dbgenerated("uuidv7()")) @db.Uuid
+  sn           String    @unique @db.VarChar(50) // 일련번호 (API 고유 ID)
+  msg_cn       String    // 메시지 내용
+  rcptn_rgn_nm String    @db.VarChar(200)        // 수신 지역명
+  crt_dt       DateTime? @db.Timestamp(6)        // 생성일시
+  emrg_step_nm String    @db.VarChar(50)         // 긴급단계
+  dst_se_nm    String    @db.VarChar(100)        // 재해구분명
+  created_at   DateTime  @default(now()) @db.Timestamp(6)
 
-  @@index([rcptnRgnNm, regYmd], map: "idx_disaster_alert_region")
+  @@index([rcptn_rgn_nm, crt_dt], map: "idx_disaster_alert_region")
 }
 
 /// 돌발상황 정보 모델
