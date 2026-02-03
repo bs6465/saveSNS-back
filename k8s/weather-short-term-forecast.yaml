@@ -44,7 +44,7 @@ spec:
                       key: DB_PASSWORD
 
           # CronJob은 작업이 끝나면 죽어야 하므로 restartPolicy는 OnFailure나 Never
-          restartPolicy: OnFailure
+          restartPolicy: Never
 
           # [추가] "홈 서버를 편애하라"는 설정
           affinity:

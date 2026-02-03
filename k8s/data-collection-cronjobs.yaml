@@ -39,7 +39,7 @@ spec:
                       name: backend-secret
                       key: DB_PASSWORD
 
-          restartPolicy: OnFailure
+          restartPolicy: Never
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -82,7 +82,7 @@ spec:
                       name: backend-secret
                       key: DB_PASSWORD
 
-          restartPolicy: OnFailure
+          restartPolicy: Never
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -125,7 +125,7 @@ spec:
                       name: backend-secret
                       key: DB_PASSWORD
 
-          restartPolicy: OnFailure
+          restartPolicy: Never
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -168,7 +168,7 @@ spec:
                       name: backend-secret
                       key: DB_PASSWORD
 
-          restartPolicy: OnFailure
+          restartPolicy: Never
 ---
 apiVersion: batch/v1
 kind: CronJob
@@ -216,4 +216,4 @@ spec:
                       name: backend-secret
                       key: DB_PASSWORD
 
-          restartPolicy: OnFailure
+          restartPolicy: Never
