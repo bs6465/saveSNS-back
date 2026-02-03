@@ -146,6 +146,8 @@ async def main():
         print("Error: DISASTER_API_KEY environment variable not set")
         return
 
+    print(f"DISASTER_API_KEY: {DISASTER_API_KEY}")
+    print(f"DB_URL: {DB_URL}")
     conn = await asyncpg.connect(DB_URL)
 
     try:

@@ -117,6 +117,10 @@ async def main():
         print("Error: NAVER_CLIENT_ID or NAVER_CLIENT_SECRET environment variable not set")
         return
 
+    print(f"NAVER_CLIENT_ID: {NAVER_CLIENT_ID}")
+    print(f"NAVER_CLIENT_SECRET: {NAVER_CLIENT_SECRET}")
+    print(f"DB_URL: {DB_URL}")
+
     conn = await asyncpg.connect(DB_URL)
 
     try:

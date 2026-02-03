@@ -155,6 +155,9 @@ async def main():
         print("Error: AIR_QUALITY_API_KEY environment variable not set")
         return
 
+    print(f"AIR_QUALITY_API_KEY: {AIR_QUALITY_API_KEY}")
+    print(f"DB_URL: {DB_URL}")
+
     conn = await asyncpg.connect(DB_URL)
 
     try:
