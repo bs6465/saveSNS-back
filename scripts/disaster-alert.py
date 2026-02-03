@@ -12,7 +12,7 @@ API: https://www.safetydata.go.kr/disaster-data/view?dataSn=228
 DB 테이블: disaster_alert
 """
 
-DISASTER_API_KEY = os.getenv('DISASTER_API_KEY')
+DISASTER_API_KEY = os.getenv('DISASTER_API_KEY').strip()
 
 DB_USER = os.getenv('DB_USER')
 DB_NAME = os.getenv('DB_NAME')

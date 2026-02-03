@@ -12,7 +12,7 @@ API: https://www.data.go.kr/data/15073861/openapi.do
 DB 테이블: air_quality_forecast
 """
 
-AIR_QUALITY_API_KEY = os.getenv('AIR_QUALITY_API_KEY')
+AIR_QUALITY_API_KEY = os.getenv('AIR_QUALITY_API_KEY').strip()
 
 DB_USER = os.getenv('DB_USER')
 DB_NAME = os.getenv('DB_NAME')

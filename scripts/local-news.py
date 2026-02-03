@@ -11,8 +11,8 @@ import os
 DB 테이블: local_news
 """
 
-NAVER_CLIENT_ID = os.getenv('NAVER_CLIENT_ID')
-NAVER_CLIENT_SECRET = os.getenv('NAVER_CLIENT_SECRET')
+NAVER_CLIENT_ID = os.getenv('NAVER_CLIENT_ID').strip()
+NAVER_CLIENT_SECRET = os.getenv('NAVER_CLIENT_SECRET').strip()
 
 DB_USER = os.getenv('DB_USER')
 DB_NAME = os.getenv('DB_NAME')
