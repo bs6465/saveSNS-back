@@ -14,7 +14,7 @@ spec:
         spec:
           containers:
             - name: air-quality
-              image: bs6465/savesns-scripts:5333a5f4e1a4b2202fb34b8b058ca4c3148b858c
+              image: bs6465/savesns-scripts:7a9c82302b718b85604b0b718c75f0cd40b3aaf1
               imagePullPolicy: Always
               command: ['python', 'air-quality.py']
 
@@ -58,7 +58,7 @@ spec:
         spec:
           containers:
             - name: disaster-alert
-              image: bs6465/savesns-scripts:5333a5f4e1a4b2202fb34b8b058ca4c3148b858c
+              image: bs6465/savesns-scripts:7a9c82302b718b85604b0b718c75f0cd40b3aaf1
               imagePullPolicy: Always
               command: ['python', 'disaster-alert.py']
 
@@ -102,7 +102,7 @@ spec:
         spec:
           containers:
             - name: traffic-incidents
-              image: bs6465/savesns-scripts:5333a5f4e1a4b2202fb34b8b058ca4c3148b858c
+              image: bs6465/savesns-scripts:7a9c82302b718b85604b0b718c75f0cd40b3aaf1
               imagePullPolicy: Always
               command: ['python', 'traffic-incidents.py']
 
@@ -146,7 +146,7 @@ spec:
         spec:
           containers:
             - name: road-traffic
-              image: bs6465/savesns-scripts:5333a5f4e1a4b2202fb34b8b058ca4c3148b858c
+              image: bs6465/savesns-scripts:7a9c82302b718b85604b0b718c75f0cd40b3aaf1
               imagePullPolicy: Always
               command: ['python', 'road-traffic.py']
 
@@ -190,7 +190,7 @@ spec:
         spec:
           containers:
             - name: local-news
-              image: bs6465/savesns-scripts:5333a5f4e1a4b2202fb34b8b058ca4c3148b858c
+              image: bs6465/savesns-scripts:7a9c82302b718b85604b0b718c75f0cd40b3aaf1
               imagePullPolicy: Always
               command: ['python', 'local-news.py']
 
