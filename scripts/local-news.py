@@ -89,6 +89,9 @@ async def fetch_news_for_region(client, region_code, keywords, sem):
                 data = response.json()
                 items = data.get('items', [])
 
+                print(f"Fetched {len(items)} news for {keyword} in {region_code}")
+                print("Response data:", data)
+
                 for item in items:
                     record = {
                         'title': clean_html(item.get('title', '')),

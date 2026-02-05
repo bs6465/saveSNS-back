@@ -46,7 +46,7 @@ kind: CronJob
 metadata:
   name: disaster-alert
 spec:
-  schedule: '*/30 * * * *' # 10분마다
+  schedule: '30 * * * *'
   revisionHistoryLimit: 1
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 1
@@ -89,7 +89,7 @@ kind: CronJob
 metadata:
   name: traffic-incidents
 spec:
-  schedule: '*/30 * * * *' # 15분마다
+  schedule: '*/30 * * * *'
   revisionHistoryLimit: 1
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 1
