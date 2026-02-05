@@ -84,6 +84,8 @@ async def fetch_news_for_region(client, region_code, keywords, sem):
             try:
                 response = await client.get(API_URL, params=params, headers=headers, timeout=10.0)
                 if response.status_code != 200:
+                    print(f"Error fetching news for {keyword}: HTTP {response.status_code}")
+                    print("Response data:", response.text)
                     continue
 
                 data = response.json()

@@ -69,6 +69,7 @@ async def fetch_traffic_incidents(client):
         response = await client.get(API_URL, params=params, timeout=30.0)
         if response.status_code != 200:
             print(f"Error: HTTP {response.status_code}")
+            print("Response data:", response.text)
             return []
 
         data = response.json()
