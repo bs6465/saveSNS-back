@@ -108,7 +108,9 @@ async def fetch_forecast(client, search_date, inform_code, sem):
 
             if not items:
                 print(f"No data for {inform_code} on {search_date}")
+                print("Response data:", data)
                 return []
+            
 
             records = []
             for item in items:

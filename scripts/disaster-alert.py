@@ -79,6 +79,7 @@ async def fetch_disaster_alerts(client, page_no=1):
 
         if not items:
             print(f"No disaster alerts found (page {page_no})")
+            print("Response data:", data)
             return [], total_count
 
         records = []
