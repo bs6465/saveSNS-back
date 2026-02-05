@@ -11,7 +11,7 @@ import os
 DB 테이블: traffic_incidents
 """
 
-ITS_API_KEY = os.getenv('ITS_API_KEY')
+ITS_API_KEY = os.getenv('ITS_API_KEY').strip()
 
 DB_USER = os.getenv('DB_USER')
 DB_NAME = os.getenv('DB_NAME')
@@ -60,6 +60,11 @@ async def fetch_traffic_incidents(client):
         'getType': 'json'
     }
 
+    print("Requesting traffic incidents from ITS API...")
+    print("API URL:", API_URL)
+    print("Parameters:", params)
+    print()
+
     try:
         response = await client.get(API_URL, params=params, timeout=30.0)
         if response.status_code != 200:
@@ -67,7 +72,7 @@ async def fetch_traffic_incidents(client):
             return []
 
         data = response.json()
-        
+        print(f"Received data: {data}")
         # API 응답 구조 확인
         body = data.get('body', {})
         items = body.get('items', [])

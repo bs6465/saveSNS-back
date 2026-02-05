@@ -89,7 +89,7 @@ kind: CronJob
 metadata:
   name: traffic-incidents
 spec:
-  schedule: '*/30 * * * *'
+  schedule: '30 * * * *'
   revisionHistoryLimit: 1
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 1
@@ -132,7 +132,7 @@ kind: CronJob
 metadata:
   name: road-traffic
 spec:
-  schedule: '*/30 * * * *' # 30분마다
+  schedule: '30 * * * *' # 30분마다
   revisionHistoryLimit: 1
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 1

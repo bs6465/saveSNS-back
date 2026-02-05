@@ -89,6 +89,11 @@ async def fetch_and_process_data(client, row, sem):
         'nx': nx, 'ny': ny
     }
 
+    print(f"Fetching data for grid ({nx}, {ny})...")
+    print("API URL:", API_URL)
+    print("Parameters:", params)
+    print()
+
     async with sem:
         try:
             response = await client.get(API_URL, params=params, timeout=10.0)

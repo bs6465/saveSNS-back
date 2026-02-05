@@ -11,7 +11,7 @@ import os
 DB 테이블: road_traffic
 """
 
-ITS_API_KEY = os.getenv('ITS_API_KEY')
+ITS_API_KEY = os.getenv('ITS_API_KEY').strip()
 
 DB_USER = os.getenv('DB_USER')
 DB_NAME = os.getenv('DB_NAME')
