@@ -37,13 +37,9 @@ export const deactivatePushToken = async (req, res, next) => {
 export const getNotifications = async (req, res, next) => {
   try {
     const { userId } = req.user;
-    const { limit = 50, offset = 0 } = req.query;
+    const { limit, offset } = req.query; // 스키마에서 이미 숫자로 변환됨
 
-    const notifications = await notificationService.getNotificationsByUserId(
-      userId,
-      parseInt(limit),
-      parseInt(offset)
-    );
+    const notifications = await notificationService.getNotificationsByUserId(userId, limit, offset);
     const unreadCount = await notificationService.getUnreadCount(userId);
 
     return successResponse(res, { notifications, unreadCount }, '알림 목록 조회 성공', 200);

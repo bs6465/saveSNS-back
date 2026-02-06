@@ -1,5 +1,7 @@
 import { prisma } from '../prismaClient.js';
 import { deleteMediaByPostId } from './media.service.js';
+import { NotFoundError, ForbiddenError } from '../errors/index.js';
+import { POST_ERRORS } from '../errors/errorCodes.js';
 
 /*
 글 작성, 조회, 수정, 삭제 로직
@@ -38,22 +40,42 @@ export const createPost = async (userId, contents, longitude, latitude, mediaUrl
 };
 
 // GET /api/posts/ 글 목록 조회 로직
+// 최적화: N+1 쿼리 문제 해결 - 단일 쿼리로 모든 데이터 조회
 export const getPosts = async (longitude, latitude, rangeMeters) => {
   // 내 위치 기준 반경 n km 내 글 찾기
-  // Prisma Raw Query 사용
+  // 단일 쿼리로 게시글, 미디어, 좋아요 수, 댓글 수를 모두 조회
   const nearbyPosts = await prisma.$queryRaw`
     SELECT
-      p.post_id AS "postId",       -- JS 스타일로 이름 변경
+      p.post_id AS "postId",
       p.user_id AS "userId",
-      u.nickname,                  -- JOIN한 테이블에서 닉네임 가져오기
+      u.nickname,
       p.contents,
       p.created_at AS "createdAt",
       ST_Distance(
         p.location::geography,
         ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography
-      ) as distance
+      ) as distance,
+      -- 좋아요 수 서브쿼리
+      (SELECT COUNT(*)::int FROM "post_like" pl WHERE pl."postId" = p.post_id) AS "likeCount",
+      -- 댓글 수 서브쿼리
+      (SELECT COUNT(*)::int FROM "comment" c WHERE c."postId" = p.post_id) AS "commentCount",
+      -- 미디어 배열 집계
+      COALESCE(
+        (
+          SELECT json_agg(
+            json_build_object(
+              'mediaId', ms.media_id,
+              'link', ms.link,
+              'type', ms.type
+            ) ORDER BY ms.created_at ASC
+          )
+          FROM "media_storage" ms
+          WHERE ms.post_id = p.post_id
+        ),
+        '[]'::json
+      ) AS media
     FROM "posts" p
-    JOIN "users_account" u ON p.user_id = u.user_id  -- 여기서 JOIN 발생!
+    JOIN "users_account" u ON p.user_id = u.user_id
     WHERE ST_DWithin(
       p.location::geography,
       ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography,
@@ -62,30 +84,6 @@ export const getPosts = async (longitude, latitude, rangeMeters) => {
     ORDER BY distance ASC
   `;
   console.log(`Posts retrieved: count:${nearbyPosts.length}`);
-
-  // 각 게시글의 미디어, 좋아요 수, 댓글 수 추가
-  for (const post of nearbyPosts) {
-    const [media, likeCount, commentCount] = await Promise.all([
-      prisma.media_storage.findMany({
-        where: { post_id: post.postId },
-        select: {
-          media_id: true,
-          link: true,
-          type: true,
-        },
-        orderBy: { created_at: 'asc' },
-      }),
-      prisma.post_like.count({
-        where: { postId: post.postId },
-      }),
-      prisma.comment.count({
-        where: { postId: post.postId },
-      }),
-    ]);
-    post.media = media.map((m) => ({ mediaId: m.media_id, link: m.link, type: m.type }));
-    post.likeCount = likeCount;
-    post.commentCount = commentCount;
-  }
 
   return nearbyPosts;
 };
@@ -140,7 +138,7 @@ export const getPostById = async (postId) => {
       },
     },
   });
-  if (!post) throw new Error('Post not found');
+  if (!post) throw new NotFoundError('게시글');
   console.log(`Post retrieved: postId:${postId}`);
   return {
     postId: post.post_id,
@@ -170,11 +168,11 @@ export const updatePost = async (postId, userId, contents) => {
   });
 
   if (!existingPost) {
-    throw new Error('POST_NOT_FOUND');
+    throw new NotFoundError('게시글');
   }
 
   if (existingPost.user_id !== userId) {
-    throw new Error('UNAUTHORIZED');
+    throw new ForbiddenError(POST_ERRORS.NOT_POST_OWNER.message);
   }
 
   const updatedPost = await prisma.posts.update({
@@ -204,11 +202,11 @@ export const deletePost = async (postId, userId) => {
   });
 
   if (!existingPost) {
-    throw new Error('POST_NOT_FOUND');
+    throw new NotFoundError('게시글');
   }
 
   if (existingPost.user_id !== userId) {
-    throw new Error('UNAUTHORIZED');
+    throw new ForbiddenError(POST_ERRORS.NOT_POST_OWNER.message);
   }
 
   // S3에서 미디어 파일 삭제 (DB cascade 삭제 전에 실행)
