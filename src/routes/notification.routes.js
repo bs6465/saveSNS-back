@@ -1,19 +1,30 @@
 import { Router } from 'express';
 import * as notificationController from '../controllers/notification.controller.js';
-import { authMiddleware } from '../middleware/authMiddleware.js';
+import { verifyToken } from '../middleware/authMiddleware.js';
 import { validate } from '../middleware/validate.js';
-import { registerPushTokenSchema, deactivatePushTokenSchema } from '../schema/notification.schema.js';
+import {
+  registerPushTokenSchema,
+  deactivatePushTokenSchema,
+} from '../schema/notification.schema.js';
 
 const router = Router();
 
 // 모든 라우트는 인증 필요
-router.use(authMiddleware);
+router.use(verifyToken());
 
 // 푸시 토큰 등록
-router.post('/push-token', validate(registerPushTokenSchema), notificationController.registerPushToken);
+router.post(
+  '/push-token',
+  validate(registerPushTokenSchema),
+  notificationController.registerPushToken,
+);
 
 // 푸시 토큰 해제
-router.delete('/push-token', validate(deactivatePushTokenSchema), notificationController.deactivatePushToken);
+router.delete(
+  '/push-token',
+  validate(deactivatePushTokenSchema),
+  notificationController.deactivatePushToken,
+);
 
 // 알림 목록 조회
 router.get('/', notificationController.getNotifications);
