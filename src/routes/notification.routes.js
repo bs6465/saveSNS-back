@@ -10,7 +10,7 @@ import {
 const router = Router();
 
 // 모든 라우트는 인증 필요
-router.use(verifyToken());
+router.use(verifyToken);
 
 // 푸시 토큰 등록
 router.post(
