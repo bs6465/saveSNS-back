@@ -1,4 +1,7 @@
 import * as commentService from '../services/comment.service.js';
+import * as notificationService from '../services/notification.service.js';
+import * as pushService from '../services/push.service.js';
+import { prisma } from '../prismaClient.js';
 import { successResponse, errorResponse } from '../utils/response.utils.js';
 
 /*
@@ -7,7 +10,7 @@ import { successResponse, errorResponse } from '../utils/response.utils.js';
 
 // POST /api/posts/:postId/comments - 댓글 작성
 export const createComment = async (req, res) => {
-  const { userId } = req.user;
+  const { userId, nickname, username } = req.user;
   const { postId } = req.params;
   const { contents, parentId } = req.body;
 
@@ -22,6 +25,38 @@ export const createComment = async (req, res) => {
       contents.trim(),
       parentId || null
     );
+
+    // 게시글 작성자에게 알림 전송 (자신의 글에 자신이 댓글 단 경우 제외)
+    try {
+      const post = await prisma.posts.findUnique({
+        where: { post_id: postId },
+        select: { user_id: true, contents: true },
+      });
+
+      if (post && post.user_id !== userId) {
+        const commenterName = nickname || username || '익명';
+        const previewContent = contents.trim().slice(0, 30) + (contents.length > 30 ? '...' : '');
+
+        // 알림 저장
+        await notificationService.createNotification(
+          post.user_id,
+          'comment',
+          '새 댓글',
+          `${commenterName}님이 댓글을 남겼습니다: ${previewContent}`,
+          { postId, commentId: comment.commentId }
+        );
+
+        // 푸시 알림 전송
+        await pushService.sendPushToUser(post.user_id, '새 댓글', `${commenterName}님이 댓글을 남겼습니다`, {
+          type: 'comment',
+          postId,
+        });
+      }
+    } catch (notifErr) {
+      console.error('Error sending comment notification:', notifErr);
+      // 알림 실패해도 댓글 작성은 성공 처리
+    }
+
     return successResponse(res, '댓글 작성 성공', comment, 201);
   } catch (err) {
     console.error('Error creating comment:', err);

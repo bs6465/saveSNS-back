@@ -55,7 +55,7 @@ export const extractS3Key = (url) => {
   // CloudFront URL: https://d1234.cloudfront.net/posts/202401/abc.jpg
   // S3 URL: https://bucket.s3.region.amazonaws.com/posts/202401/abc.jpg
 
-  const cloudFrontDomain = process.env.CLOUDFRONT_DOMAIN;
+  const cloudFrontDomain = process.env.CLOUDFRONT_DOMAIN?.trim();
 
   if (cloudFrontDomain && url.includes(cloudFrontDomain)) {
     // CloudFront URL에서 key 추출

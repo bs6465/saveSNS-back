@@ -5,6 +5,7 @@ import { getCloudFrontUrl, s3Client } from '../config/s3.config.js';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { randomBytes } from 'crypto';
 import path from 'path';
+import { prisma } from '../prismaClient.js';
 
 /*
 미디어 업로드, 삭제 컨트롤러
@@ -88,11 +89,11 @@ export const deleteMedia = async (req, res) => {
 
   try {
     // 미디어 정보 조회 및 권한 확인
-    const media = await prisma.mediaStorage.findUnique({
-      where: { mediaId },
+    const media = await prisma.media_storage.findUnique({
+      where: { media_id: mediaId },
       include: {
-        post: {
-          select: { userId: true },
+        posts: {
+          select: { user_id: true },
         },
       },
     });
@@ -101,7 +102,7 @@ export const deleteMedia = async (req, res) => {
       return errorResponse(res, '미디어를 찾을 수 없습니다', null, 404);
     }
 
-    if (media.post.userId !== userId) {
+    if (media.posts.user_id !== userId) {
       return errorResponse(res, '본인의 미디어만 삭제할 수 있습니다', null, 403);
     }
 
@@ -111,8 +112,8 @@ export const deleteMedia = async (req, res) => {
     }
 
     // DB에서 미디어 레코드 삭제
-    await prisma.mediaStorage.delete({
-      where: { mediaId },
+    await prisma.media_storage.delete({
+      where: { media_id: mediaId },
     });
 
     return successResponse(res, '미디어 삭제 성공', { mediaId }, 200);

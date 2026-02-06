@@ -47,6 +47,9 @@ app.use('/api/news', newsRoutes);
 import commentRoutes from './routes/comment.routes.js';
 app.use('/api/comments', commentRoutes);
 
+import notificationRoutes from './routes/notification.routes.js';
+app.use('/api/notifications', notificationRoutes);
+
 // ------------------------------------
 // Express와 WebSocket 서버 통합
 // ------------------------------------

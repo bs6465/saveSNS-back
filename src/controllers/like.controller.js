@@ -1,4 +1,7 @@
 import * as likeService from '../services/like.service.js';
+import * as notificationService from '../services/notification.service.js';
+import * as pushService from '../services/push.service.js';
+import { prisma } from '../prismaClient.js';
 import { successResponse, errorResponse } from '../utils/response.utils.js';
 
 /*
@@ -7,12 +10,44 @@ import { successResponse, errorResponse } from '../utils/response.utils.js';
 
 // POST /api/posts/:postId/like - 좋아요 토글
 export const toggleLike = async (req, res) => {
-  const { userId } = req.user;
+  const { userId, nickname, username } = req.user;
   const { postId } = req.params;
 
   try {
     const result = await likeService.toggleLike(postId, userId);
     const likeInfo = await likeService.getLikeInfo(postId, userId);
+
+    // 좋아요 추가 시에만 알림 전송 (자신의 글에 자신이 좋아요한 경우 제외)
+    if (result.liked) {
+      try {
+        const post = await prisma.posts.findUnique({
+          where: { post_id: postId },
+          select: { user_id: true },
+        });
+
+        if (post && post.user_id !== userId) {
+          const likerName = nickname || username || '익명';
+
+          // 알림 저장
+          await notificationService.createNotification(
+            post.user_id,
+            'like',
+            '좋아요',
+            `${likerName}님이 게시글을 좋아합니다`,
+            { postId }
+          );
+
+          // 푸시 알림 전송
+          await pushService.sendPushToUser(post.user_id, '좋아요', `${likerName}님이 게시글을 좋아합니다`, {
+            type: 'like',
+            postId,
+          });
+        }
+      } catch (notifErr) {
+        console.error('Error sending like notification:', notifErr);
+        // 알림 실패해도 좋아요는 성공 처리
+      }
+    }
 
     return successResponse(
       res,

@@ -122,6 +122,8 @@ model users_account {
   comments       comment[]
   likes          post_like[]
   users_location users_location?
+  push_tokens    push_token[]
+  notifications  notification[]
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -266,6 +268,39 @@ model road_traffic {
 
   @@index([road_name, data_time], map: "idx_road_traffic_road")
   @@index([location], map: "idx_road_traffic_location", type: Gist)
+}
+
+/// 푸시 토큰 모델 (사용자 디바이스별 토큰 저장)
+model push_token {
+  id         String   @id(map: "push_token_pk") @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId     String   @db.Uuid
+  token      String   @unique @db.VarChar(500) // Expo Push Token
+  deviceType String?  @db.VarChar(20) // ios, android, web
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime @default(now()) @db.Timestamp(6)
+
+  user users_account @relation(fields: [userId], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "push_token_users_fk")
+
+  @@index([userId], map: "idx_push_token_user")
+}
+
+/// 알림 모델 (알림 히스토리)
+model notification {
+  id         String    @id(map: "notification_pk") @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId     String    @db.Uuid
+  type       String    @db.VarChar(50) // disaster, comment, like, urgent_post
+  title      String    @db.VarChar(200)
+  body       String
+  data       String?   // JSON 데이터 (postId, alertId 등)
+  isRead     Boolean   @default(false)
+  createdAt  DateTime  @default(now()) @db.Timestamp(6)
+  readAt     DateTime? @db.Timestamp(6)
+
+  user users_account @relation(fields: [userId], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "notification_users_fk")
+
+  @@index([userId, createdAt], map: "idx_notification_user")
+  @@index([userId, isRead], map: "idx_notification_unread")
 }
 
 /// This view or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments

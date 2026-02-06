@@ -1,6 +1,7 @@
 import { prisma } from '../prismaClient.js';
+import { deleteMediaByPostId } from './media.service.js';
 
-/* 
+/*
 글 작성, 조회, 수정, 삭제 로직
 */
 
@@ -209,6 +210,9 @@ export const deletePost = async (postId, userId) => {
   if (existingPost.user_id !== userId) {
     throw new Error('UNAUTHORIZED');
   }
+
+  // S3에서 미디어 파일 삭제 (DB cascade 삭제 전에 실행)
+  await deleteMediaByPostId(postId);
 
   await prisma.posts.delete({
     where: { post_id: postId },
