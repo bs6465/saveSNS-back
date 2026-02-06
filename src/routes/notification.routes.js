@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as notificationController from '../controllers/notification.controller.js';
 import { verifyToken } from '../middleware/authMiddleware.js';
-import { validate } from '../middleware/validate.js';
+import { validateBody, validateQuery, validateParams } from '../middleware/validate.js';
 import {
   registerPushTokenSchema,
   deactivatePushTokenSchema,
@@ -15,14 +15,14 @@ router.use(verifyToken());
 // 푸시 토큰 등록
 router.post(
   '/push-token',
-  validate(registerPushTokenSchema),
+  validateBody(registerPushTokenSchema),
   notificationController.registerPushToken,
 );
 
 // 푸시 토큰 해제
 router.delete(
   '/push-token',
-  validate(deactivatePushTokenSchema),
+  validateBody(deactivatePushTokenSchema),
   notificationController.deactivatePushToken,
 );
 
