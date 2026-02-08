@@ -222,7 +222,7 @@ model air_quality_forecast {
 /// 재난 알림 모델
 model disaster_alert {
   id           String    @id(map: "disaster_alert_pk") @default(dbgenerated("uuidv7()")) @db.Uuid
-  sn           String    @unique @db.VarChar(50) // 일련번호 (API 고유 ID)
+  sn           Int       @unique // 일련번호 (API 고유 ID)
   msg_cn       String    // 메시지 내용
   rcptn_rgn_nm String    @db.VarChar(200)        // 수신 지역명
   crt_dt       DateTime? @db.Timestamp(6)        // 생성일시
