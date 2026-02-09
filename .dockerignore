@@ -12,7 +12,10 @@ Dockerfile
 # 기타 로컬 파일
 .env
 *.env
+.env.development
 .env.example
+.env.backup
+.env.*
 .vscode/
 README.md
 npm-debug.log
