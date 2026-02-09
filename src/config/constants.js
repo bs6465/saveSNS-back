@@ -13,6 +13,7 @@ export const APP_CONFIG = {
 export const PAGINATION = {
   defaultLimit: 50,
   maxLimit: 100,
+  defaultCursorLimit: 20,
 };
 
 // Location-based query configuration

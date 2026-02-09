@@ -1,7 +1,6 @@
 // media.service.js
 import { prisma } from '../prismaClient.js';
-import { DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { s3Client, extractS3Key } from '../config/s3.config.js';
+import { deleteFile } from '../config/storage.config.js';
 
 /*
 미디어 업로드, 삭제 로직
@@ -50,21 +49,13 @@ export const getMediaByPostId = async (postId) => {
   }));
 };
 
-// S3에서 파일 삭제 (CloudFront URL 또는 S3 URL 지원)
-export const deleteMediaFromS3 = async (fileUrl) => {
+// 스토리지에서 파일 삭제 (S3 또는 로컬 자동 전환)
+export const deleteMediaFromStorage = async (fileUrl) => {
   try {
-    // CloudFront URL 또는 S3 URL에서 S3 key 추출
-    const key = extractS3Key(fileUrl);
-
-    const command = new DeleteObjectCommand({
-      Bucket: process.env.AWS_S3_BUCKET_NAME,
-      Key: key,
-    });
-
-    await s3Client.send(command);
-    console.log(`Deleted from S3: ${key}`);
+    await deleteFile(fileUrl);
+    console.log(`Deleted file: ${fileUrl}`);
   } catch (error) {
-    console.error('Error deleting from S3:', error);
+    console.error('Error deleting file:', error);
     throw error;
   }
 };
@@ -77,11 +68,11 @@ export const deleteMediaByPostId = async (postId) => {
     select: { media_id: true, link: true },
   });
 
-  // S3에서 파일 삭제
+  // 스토리지에서 파일 삭제
   for (const media of mediaList) {
     if (media.link) {
       try {
-        await deleteMediaFromS3(media.link);
+        await deleteMediaFromStorage(media.link);
       } catch (error) {
         console.error(`Failed to delete media ${media.media_id}:`, error);
       }

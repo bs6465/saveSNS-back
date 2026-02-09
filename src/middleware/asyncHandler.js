@@ -10,7 +10,7 @@
  * @returns {Function} - Express middleware function
  */
 export const asyncHandler = (fn) => (req, res, next) => {
-  Promise.resolve(fn(req, res, next)).catch(next);
+  Promise.resolve(fn(req, res, next)).catch(next); // 에러 발생 시 next()로 전달
 };
 
 export default asyncHandler;

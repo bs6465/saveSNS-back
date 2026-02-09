@@ -35,6 +35,9 @@
     "pnpm": "^10.26.2",
     "zod": "^4.2.1"
   },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "pnpm": {
     "onlyBuiltDependencies": [
       "argon2"

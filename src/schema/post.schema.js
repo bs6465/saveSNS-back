@@ -12,11 +12,14 @@ export const createPostSchema = z.object({
   mediaUrls: z.array(z.string().url()).optional().default([]),
 });
 
-// 게시글 조회 스키마, validateBody 미들웨어에서 사용
+// 게시글 조회 스키마, validateQuery 미들웨어에서 사용
 export const getPostsSchema = z.object({
   longitude: z.coerce.number().min(-180).max(180),
   latitude: z.coerce.number().min(-90).max(90),
   rangeMeters: z.coerce.number().min(100).max(10000),
+  cursor: z.string().uuid().optional(),
+  limit: z.coerce.number().min(1).max(100).default(20),
+  sortBy: z.enum(['recent', 'distance']).default('recent'),
 });
 
 // 게시글 ID로 상세 조회 스키마, validateQuery 미들웨어에서 사용

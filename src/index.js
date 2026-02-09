@@ -3,6 +3,8 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { APP_CONFIG, CORS_CONFIG, RATE_LIMIT, FILE_UPLOAD } from './config/constants.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 // import { initSocketIO } from './websocket'; // 웹소켓 핸들러 가져오기
@@ -40,6 +42,14 @@ const authLimiter = rateLimit({
 
 // JSON 파싱 (Base64 이미지 업로드용 크기 증가)
 app.use(express.json({ limit: '50mb' }));
+
+// 로컬 스토리지 모드: 업로드 파일 정적 서빙
+if (process.env.STORAGE_TYPE === 'local') {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  const uploadsPath = path.resolve(__dirname, '../uploads');
+  app.use('/uploads', express.static(uploadsPath));
+  console.log(`[Local Storage] Serving uploads from: ${uploadsPath}`);
+}
 
 app.get('/', (req, res) => {
   res.send('Hello World!');

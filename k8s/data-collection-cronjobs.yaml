@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: air-quality
 spec:
-  schedule: '5 * * * *' # 매시 5분
+  schedule: '5 */4 * * *' # 매시 5분
   revisionHistoryLimit: 1
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 1
@@ -46,7 +46,7 @@ kind: CronJob
 metadata:
   name: disaster-alert
 spec:
-  schedule: '30 * * * *'
+  schedule: '30 */4 * * *'
   revisionHistoryLimit: 1
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 1
@@ -89,7 +89,7 @@ kind: CronJob
 metadata:
   name: traffic-incidents
 spec:
-  schedule: '30 * * * *'
+  schedule: '30 */4 * * *'
   revisionHistoryLimit: 1
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 1
@@ -132,7 +132,7 @@ kind: CronJob
 metadata:
   name: road-traffic
 spec:
-  schedule: '30 * * * *' # 30분마다
+  schedule: '30 */4 * * *' # 30분마다
   revisionHistoryLimit: 1
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 1
@@ -175,7 +175,7 @@ kind: CronJob
 metadata:
   name: local-news
 spec:
-  schedule: '0 */2 * * *' # 2시간마다
+  schedule: '0 */4 * * *' # 4시간마다
   revisionHistoryLimit: 1
   successfulJobsHistoryLimit: 2
   failedJobsHistoryLimit: 1

@@ -1,10 +1,7 @@
 // media.controller.js
 import * as mediaService from '../services/media.service.js';
 import { successResponse, errorResponse } from '../utils/response.utils.js';
-import { getCloudFrontUrl, s3Client } from '../config/s3.config.js';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { randomBytes } from 'crypto';
-import path from 'path';
+import { uploadFile, generateKey } from '../config/storage.config.js';
 import { prisma } from '../prismaClient.js';
 
 /*
@@ -26,34 +23,15 @@ export const uploadMedia = async (req, res) => {
       return errorResponse(res, '최대 5개까지 업로드 가능합니다', null, 400);
     }
 
-    // 각 이미지를 S3에 업로드
+    // 각 이미지를 스토리지에 업로드 (S3 또는 로컬)
     const uploadPromises = images.map(async (image) => {
       const { filename, type, data } = image;
-
-      // Base64를 Buffer로 변환
       const buffer = Buffer.from(data, 'base64');
-
-      // 파일명 생성: posts/YYYYMM/랜덤문자열.확장자
-      const date = new Date();
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const randomName = randomBytes(16).toString('hex');
-      const ext = path.extname(filename);
-      const key = `posts/${year}${month}/${randomName}${ext}`;
-
-      // S3에 업로드 (One Zone-IA 스토리지 클래스 사용)
-      const command = new PutObjectCommand({
-        Bucket: process.env.AWS_S3_BUCKET_NAME?.trim(),
-        Key: key,
-        Body: buffer,
-        ContentType: type,
-        StorageClass: 'ONEZONE_IA', // 단일 가용 영역, 비용 절감
-      });
-
-      await s3Client.send(command);
+      const key = generateKey(filename);
+      const location = await uploadFile(buffer, key, type);
 
       return {
-        location: getCloudFrontUrl(key),
+        location,
         key,
         mimetype: type,
         size: buffer.length,
@@ -106,9 +84,9 @@ export const deleteMedia = async (req, res) => {
       return errorResponse(res, '본인의 미디어만 삭제할 수 있습니다', null, 403);
     }
 
-    // S3에서 파일 삭제
+    // 스토리지에서 파일 삭제
     if (media.link) {
-      await mediaService.deleteMediaFromS3(media.link);
+      await mediaService.deleteMediaFromStorage(media.link);
     }
 
     // DB에서 미디어 레코드 삭제

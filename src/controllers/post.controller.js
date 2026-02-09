@@ -21,12 +21,12 @@ export const createPost = asyncHandler(async (req, res) => {
   return successResponse(res, '글 작성 성공', data, 201);
 });
 
-// GET /api/posts/ 글 목록 조회
+// GET /api/posts/ 글 목록 조회 (커서 기반 페이지네이션)
 export const getPosts = asyncHandler(async (req, res) => {
-  const { longitude, latitude, rangeMeters } = req.validatedQuery;
+  const { longitude, latitude, rangeMeters, cursor, limit, sortBy } = req.validatedQuery;
 
-  const posts = await postService.getPosts(longitude, latitude, rangeMeters);
-  return successResponse(res, '글 목록 조회 성공', posts, 200);
+  const result = await postService.getPosts(longitude, latitude, rangeMeters, cursor, limit, sortBy);
+  return successResponse(res, '글 목록 조회 성공', result, 200);
 });
 
 // GET /api/posts/all 글 전체 조회

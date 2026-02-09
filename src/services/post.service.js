@@ -1,4 +1,5 @@
 import { prisma } from '../prismaClient.js';
+import { Prisma } from '@prisma/client';
 import { deleteMediaByPostId } from './media.service.js';
 import { NotFoundError, ForbiddenError } from '../errors/index.js';
 import { POST_ERRORS } from '../errors/errorCodes.js';
@@ -41,9 +42,56 @@ export const createPost = async (userId, contents, longitude, latitude, mediaUrl
 
 // GET /api/posts/ 글 목록 조회 로직
 // 최적화: N+1 쿼리 문제 해결 - 단일 쿼리로 모든 데이터 조회
-export const getPosts = async (longitude, latitude, rangeMeters) => {
-  // 내 위치 기준 반경 n km 내 글 찾기
-  // 단일 쿼리로 게시글, 미디어, 좋아요 수, 댓글 수를 모두 조회
+// 커서 기반 페이지네이션 + 정렬 모드(최신순/거리순) 지원
+export const getPosts = async (longitude, latitude, rangeMeters, cursor = null, limit = 20, sortBy = 'recent') => {
+  // 거리순: 페이지네이션 없이 최대 100개 반환
+  if (sortBy === 'distance') {
+    const nearbyPosts = await prisma.$queryRaw`
+      SELECT
+        p.post_id AS "postId",
+        p.user_id AS "userId",
+        u.nickname,
+        p.contents,
+        p.created_at AS "createdAt",
+        ST_Distance(
+          p.location::geography,
+          ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography
+        ) as distance,
+        (SELECT COUNT(*)::int FROM "post_like" pl WHERE pl."postId" = p.post_id) AS "likeCount",
+        (SELECT COUNT(*)::int FROM "comment" c WHERE c."postId" = p.post_id) AS "commentCount",
+        COALESCE(
+          (
+            SELECT json_agg(
+              json_build_object(
+                'mediaId', ms.media_id,
+                'link', ms.link,
+                'type', ms.type
+              ) ORDER BY ms.created_at ASC
+            )
+            FROM "media_storage" ms
+            WHERE ms.post_id = p.post_id
+          ),
+          '[]'::json
+        ) AS media
+      FROM "posts" p
+      JOIN "users_account" u ON p.user_id = u.user_id
+      WHERE ST_DWithin(
+        p.location::geography,
+        ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography,
+        ${rangeMeters}
+      )
+      ORDER BY distance ASC
+      LIMIT 100
+    `;
+    console.log(`Posts retrieved (distance): count:${nearbyPosts.length}`);
+    return { posts: nearbyPosts, nextCursor: null, hasMore: false };
+  }
+
+  // 최신순: 커서 기반 페이지네이션
+  const cursorCondition = cursor
+    ? Prisma.sql`AND p.post_id < ${cursor}::uuid`
+    : Prisma.empty;
+
   const nearbyPosts = await prisma.$queryRaw`
     SELECT
       p.post_id AS "postId",
@@ -55,11 +103,8 @@ export const getPosts = async (longitude, latitude, rangeMeters) => {
         p.location::geography,
         ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography
       ) as distance,
-      -- 좋아요 수 서브쿼리
       (SELECT COUNT(*)::int FROM "post_like" pl WHERE pl."postId" = p.post_id) AS "likeCount",
-      -- 댓글 수 서브쿼리
       (SELECT COUNT(*)::int FROM "comment" c WHERE c."postId" = p.post_id) AS "commentCount",
-      -- 미디어 배열 집계
       COALESCE(
         (
           SELECT json_agg(
@@ -81,11 +126,17 @@ export const getPosts = async (longitude, latitude, rangeMeters) => {
       ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography,
       ${rangeMeters}
     )
-    ORDER BY distance ASC
+    ${cursorCondition}
+    ORDER BY p.post_id DESC
+    LIMIT ${limit + 1}
   `;
-  console.log(`Posts retrieved: count:${nearbyPosts.length}`);
 
-  return nearbyPosts;
+  const hasMore = nearbyPosts.length > limit;
+  const posts = hasMore ? nearbyPosts.slice(0, limit) : nearbyPosts;
+  const nextCursor = hasMore ? posts[posts.length - 1].postId : null;
+
+  console.log(`Posts retrieved (recent): count:${posts.length}, hasMore:${hasMore}`);
+  return { posts, nextCursor, hasMore };
 };
 
 // GET /api/posts/ 글 전체 조회 로직
