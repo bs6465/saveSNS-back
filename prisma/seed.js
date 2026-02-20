@@ -41,6 +41,14 @@ const hashPassword = (plain) =>
 async function setupGeneratedColumns() {
   const client = await pool.connect();
   try {
+    // 뷰가 nx, ny 컬럼에 의존하므로 컬럼 재생성 전에 먼저 삭제
+    // (createViews()에서 바로 재생성됨)
+    await client.query(`
+      DROP VIEW IF EXISTS weather_ultra_by_user_id CASCADE;
+      DROP VIEW IF EXISTS weather_short_by_user_id CASCADE;
+      DROP VIEW IF EXISTS view_unique_user_grids CASCADE;
+    `);
+
     // posts.location - longitude/latitude로부터 자동 생성
     await client.query(`
       ALTER TABLE posts DROP COLUMN IF EXISTS location;

@@ -1,0 +1,66 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: db-backup
+  namespace: savesns
+spec:
+  schedule: '0 3 * * *' # 매일 새벽 3시 (UTC)
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: db-backup
+              image: postgres:18.1
+              command:
+                - /bin/bash
+                - -c
+                - |
+                  TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+                  BACKUP_FILE="/backups/savesns_${TIMESTAMP}.dump"
+                  echo "=== DB 백업 시작: $(date) ==="
+                  pg_dump \
+                    -h $DB_HOST \
+                    -U $POSTGRES_USER \
+                    -d $POSTGRES_DB \
+                    --format=custom \
+                    --compress=9 \
+                    --no-owner \
+                    --no-privileges \
+                    -f "$BACKUP_FILE"
+                  echo "백업 완료: $BACKUP_FILE ($(du -sh $BACKUP_FILE | cut -f1))"
+                  # 7일 이전 백업 삭제
+                  find /backups -name "savesns_*.dump" -mtime +7 -delete
+                  echo "=== DB 백업 완료: $(date) ==="
+              env:
+                - name: DB_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials
+                      key: host
+                - name: POSTGRES_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials
+                      key: username
+                - name: POSTGRES_DB
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials
+                      key: database
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-credentials
+                      key: password
+              volumeMounts:
+                - name: backup-storage
+                  mountPath: /backups
+          restartPolicy: OnFailure
+          volumes:
+            - name: backup-storage
+              persistentVolumeClaim:
+                claimName: db-backup-pvc

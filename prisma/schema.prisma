@@ -67,12 +67,13 @@ model post_like {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model media_storage {
-  media_id   String    @id(map: "mediastorage_pk") @default(dbgenerated("uuidv7()")) @db.Uuid
-  link       String?   @db.VarChar
-  post_id    String    @db.Uuid
-  type       String?   @db.VarChar(20)
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-  posts      posts     @relation(fields: [post_id], references: [post_id], onDelete: Cascade, onUpdate: NoAction, map: "mediastorage_posts_fk")
+  media_id       String    @id(map: "mediastorage_pk") @default(dbgenerated("uuidv7()")) @db.Uuid
+  link           String?   @db.VarChar
+  thumbnail_link String?   @db.VarChar
+  post_id        String    @db.Uuid
+  type           String?   @db.VarChar(20)
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  posts          posts     @relation(fields: [post_id], references: [post_id], onDelete: Cascade, onUpdate: NoAction, map: "mediastorage_posts_fk")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -84,10 +85,11 @@ model posts {
   longitude     Float?
   latitude      Float?
   location      Unsupported("geometry")? @default(dbgenerated("st_setsrid(st_makepoint(longitude, latitude), 4326)"))
-  media_storage media_storage[]
-  comments      comment[]
-  likes         post_like[]
-  users_account users_account            @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "posts_users_account_fk")
+  media_storage    media_storage[]
+  comments         comment[]
+  likes            post_like[]
+  urgency_reports  urgency_report[]
+  users_account    users_account            @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "posts_users_account_fk")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -118,12 +120,13 @@ model users_account {
   nickname       String?         @db.VarChar(255)
   provider       String          @default("local") @db.VarChar(255)
   sns_id         String?         @db.VarChar(255)
-  posts          posts[]
-  comments       comment[]
-  likes          post_like[]
-  users_location users_location?
-  push_tokens    push_token[]
-  notifications  notification[]
+  posts            posts[]
+  comments         comment[]
+  likes            post_like[]
+  urgency_reports  urgency_report[]
+  users_location   users_location?
+  push_tokens      push_token[]
+  notifications    notification[]
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -270,6 +273,30 @@ model road_traffic {
   @@index([location], map: "idx_road_traffic_location", type: Gist)
 }
 
+/// 긴급도 리포트 모델 (게시글 긴급도 분석 결과)
+model urgency_report {
+  urgencyReportId String   @id(map: "urgency_report_pk") @default(dbgenerated("uuidv7()")) @db.Uuid
+  postId          String   @db.Uuid
+  userId          String   @db.Uuid
+  score           Float    @db.Real                 // 긴급도 점수 (0~10)
+  level           String   @db.VarChar(20)          // urgent, caution, normal
+  category        String?  @db.VarChar(50)          // naturalDisaster, accident, lifeSafety, health
+  matchedKeywords String[] @default([])             // 매칭된 키워드 목록
+  confidence      Float    @default(0) @db.Real     // 신뢰도 (0~1)
+  longitude       Float?
+  latitude        Float?
+  isConfirmed     Boolean  @default(false)          // 사용자 확인 여부
+  reportCount     Int      @default(0)              // 확인/신고 수
+  createdAt       DateTime @default(now()) @db.Timestamp(6)
+
+  post posts         @relation(fields: [postId], references: [post_id], onDelete: Cascade, onUpdate: NoAction, map: "urgency_report_posts_fk")
+  user users_account @relation(fields: [userId], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "urgency_report_users_fk")
+
+  @@index([postId], map: "idx_urgency_report_post")
+  @@index([level, createdAt], map: "idx_urgency_report_level")
+  @@index([userId], map: "idx_urgency_report_user")
+}
+
 /// 푸시 토큰 모델 (사용자 디바이스별 토큰 저장)
 model push_token {
   id         String   @id(map: "push_token_pk") @default(dbgenerated("uuidv7()")) @db.Uuid
@@ -319,6 +346,25 @@ view weather_ultra_by_user_id {
   lgt           Int?      @db.SmallInt
   vec           Int?      @db.SmallInt
   wsd           Int?      @db.SmallInt
+}
+
+/// 대피소 정보 모델 (민방위, 지진, 수해 대피소)
+model shelter {
+  shelterId   String  @id(map: "shelter_pk") @default(dbgenerated("uuidv7()")) @db.Uuid
+  name        String  @db.VarChar(200)         // 시설명
+  address     String  @db.VarChar(300)         // 주소
+  shelterType String  @db.VarChar(50)          // civil_defense, earthquake, flood
+  longitude   Float
+  latitude    Float
+  capacity    Int?                              // 수용 인원
+  phone       String? @db.VarChar(50)          // 연락처
+  sidoName    String? @db.VarChar(40)          // 시도명
+  sigunguName String? @db.VarChar(40)          // 시군구명
+  createdAt   DateTime @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime? @db.Timestamp(6)
+
+  @@index([shelterType, sidoName], map: "idx_shelter_type_sido")
+  @@index([latitude, longitude], map: "idx_shelter_location")
 }
 
 view view_unique_user_grids {
