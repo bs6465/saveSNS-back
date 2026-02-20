@@ -32,7 +32,7 @@ import * as notificationSchema from '../schema/notification.schema.ts';
  *                 description: 푸시 토큰
  *               platform:
  *                 type: string
- *                 description: 플랫폼 (ios, android)
+ *                 description: "플랫폼 (ios, android)"
  *     responses:
  *       200:
  *         description: 푸시 토큰 등록 성공

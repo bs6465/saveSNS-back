@@ -46,7 +46,7 @@ router.get('/', verifyToken, airqualityController.getAirQuality);
  *         required: true
  *         schema:
  *           type: string
- *         description: 시도명 (예: 서울, 부산)
+ *         description: "시도명 (예: 서울, 부산)"
  *     responses:
  *       200:
  *         description: 시도별 대기질 조회 성공

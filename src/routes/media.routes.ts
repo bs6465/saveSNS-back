@@ -28,7 +28,7 @@ import { verifyToken } from '../middleware/authMiddleware.ts';
  *                 type: array
  *                 items:
  *                   type: string
- *                 description: Base64 인코딩된 이미지 배열 (최대 5개)
+ *                 description: "Base64 인코딩된 이미지 배열 (최대 5개)"
  *     responses:
  *       201:
  *         description: 미디어 업로드 성공

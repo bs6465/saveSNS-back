@@ -96,7 +96,7 @@ router.post(
  *         required: true
  *         schema:
  *           type: number
- *         description: 검색 반경 (미터)
+ *         description: "검색 반경 (미터)"
  *       - in: query
  *         name: cursor
  *         schema:
