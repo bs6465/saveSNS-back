@@ -74,7 +74,7 @@ const uploadToLocal = async (
   await fs.mkdir(path.dirname(filePath), { recursive: true });
   await fs.writeFile(filePath, buffer);
 
-  const baseUrl = `http://localhost:${process.env.PORT || 3000}`;
+  const baseUrl = `http://localhost:${process.env.PORT || 4000}`;
   return `${baseUrl}/uploads/${key}`;
 };
 

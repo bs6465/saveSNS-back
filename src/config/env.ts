@@ -1,7 +1,7 @@
 const REQUIRED_VARS = ['DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT', 'DB_NAME', 'JWT_SECRET_KEY'];
 
 const OPTIONAL_DEFAULTS: Record<string, string> = {
-  PORT: '3000',
+  PORT: '4000',
   NODE_ENV: 'development',
   STORAGE_TYPE: 'local',
 };

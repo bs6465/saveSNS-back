@@ -10,8 +10,8 @@ spec:
   selector:
     app: api-backend
   ports:
-    - port: 3000 # 내부끼리 통신할 서비스 포트 (들어오는 문)
-      targetPort: 3000 # 타겟 포트 (Node.js 포트)
+    - port: 4000 # 내부끼리 통신할 서비스 포트 (들어오는 문)
+      targetPort: 4000 # 타깃 포트 (Node.js 포트)
       nodePort: 30000 # 실제로 외부에서 접근할 포트 (30000~32767 사이)
 
   # [Socket.io 팁]
@@ -49,7 +49,7 @@ spec:
           imagePullPolicy: Always
 
           ports:
-            - containerPort: 3000 # Node.js 기본 포트
+            - containerPort: 4000 # Node.js 포트
 
           # 1. ConfigMap 전체를 한방에 로드 (변수명이 똑같다면 이게 편함)
           envFrom:
@@ -121,14 +121,14 @@ spec:
           readinessProbe:
             httpGet:
               path: /health
-              port: 3000
+              port: 4000
             initialDelaySeconds: 10
             periodSeconds: 5
 
           livenessProbe:
             httpGet:
               path: /health
-              port: 3000
+              port: 4000
             initialDelaySeconds: 15
             periodSeconds: 10
             failureThreshold: 3
