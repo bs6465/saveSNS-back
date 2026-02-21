@@ -1,6 +1,74 @@
 -- CreateExtension
 CREATE EXTENSION IF NOT EXISTS "postgis";
 
+-- uuidv7() 함수: RFC 9562 기반 시간 정렬 가능한 UUID v7 생성
+CREATE OR REPLACE FUNCTION uuidv7() RETURNS uuid AS $$
+DECLARE
+  unix_ts_ms bytea;
+  uuid_bytes bytea;
+BEGIN
+  unix_ts_ms = substring(int8send(floor(extract(epoch FROM clock_timestamp()) * 1000)::bigint) FROM 3);
+  uuid_bytes = unix_ts_ms || gen_random_bytes(10);
+  uuid_bytes = set_byte(uuid_bytes, 6, (b'0111' || get_byte(uuid_bytes, 6)::bit(4))::bit(8)::int);
+  uuid_bytes = set_byte(uuid_bytes, 8, (b'10' || get_byte(uuid_bytes, 8)::bit(6))::bit(8)::int);
+  RETURN encode(uuid_bytes, 'hex')::uuid;
+END
+$$ LANGUAGE plpgsql VOLATILE;
+
+-- KMA 좌표 변환용 복합 타입
+CREATE TYPE grid_xy AS (nx int, ny int);
+
+-- kma_lonlat_to_grid() 함수: 위경도 → 기상청 격자 좌표 변환
+CREATE OR REPLACE FUNCTION kma_lonlat_to_grid(lon double precision, lat double precision)
+RETURNS grid_xy AS $$
+DECLARE
+  v_RE double precision := 6371.00877;
+  v_GRID double precision := 5.0;
+  v_SLAT1 double precision := 30.0;
+  v_SLAT2 double precision := 60.0;
+  v_OLON double precision := 126.0;
+  v_OLAT double precision := 38.0;
+  v_XO double precision := 43.0;
+  v_YO double precision := 136.0;
+  v_DEGRAD double precision := PI() / 180.0;
+  re double precision;
+  slat1 double precision;
+  slat2 double precision;
+  olon double precision;
+  olat double precision;
+  sn double precision;
+  sf double precision;
+  ro double precision;
+  ra double precision;
+  theta double precision;
+  result grid_xy;
+BEGIN
+  IF lon IS NULL OR lat IS NULL THEN
+    RETURN NULL;
+  END IF;
+  re := v_RE / v_GRID;
+  slat1 := v_SLAT1 * v_DEGRAD;
+  slat2 := v_SLAT2 * v_DEGRAD;
+  olon := v_OLON * v_DEGRAD;
+  olat := v_OLAT * v_DEGRAD;
+  sn := TAN(PI() * 0.25 + slat2 * 0.5) / TAN(PI() * 0.25 + slat1 * 0.5);
+  sn := LN(COS(slat1) / COS(slat2)) / LN(sn);
+  sf := TAN(PI() * 0.25 + slat1 * 0.5);
+  sf := POWER(sf, sn) * COS(slat1) / sn;
+  ro := TAN(PI() * 0.25 + olat * 0.5);
+  ro := re * sf / POWER(ro, sn);
+  ra := TAN(PI() * 0.25 + lat * v_DEGRAD * 0.5);
+  ra := re * sf / POWER(ra, sn);
+  theta := lon * v_DEGRAD - olon;
+  IF theta > PI() THEN theta := theta - 2.0 * PI(); END IF;
+  IF theta < -PI() THEN theta := theta + 2.0 * PI(); END IF;
+  theta := theta * sn;
+  result.nx := FLOOR(ra * SIN(theta) + v_XO + 0.5)::int;
+  result.ny := FLOOR(ro - ra * COS(theta) + v_YO + 0.5)::int;
+  RETURN result;
+END
+$$ LANGUAGE plpgsql IMMUTABLE;
+
 -- CreateTable
 CREATE TABLE "air_quality" (
     "air_quality_id" UUID NOT NULL DEFAULT uuidv7(),
@@ -65,7 +133,7 @@ CREATE TABLE "posts" (
     "contents" TEXT NOT NULL,
     "longitude" DOUBLE PRECISION,
     "latitude" DOUBLE PRECISION,
-    "location" geometry DEFAULT st_setsrid(st_makepoint(longitude, latitude), 4326),
+    "location" geometry,
 
     CONSTRAINT "posts_pk" PRIMARY KEY ("post_id")
 );
@@ -99,9 +167,9 @@ CREATE TABLE "users_location" (
     "user_id" UUID NOT NULL,
     "longitude" DOUBLE PRECISION,
     "latitude" DOUBLE PRECISION,
-    "location" geometry DEFAULT st_setsrid(st_makepoint(longitude, latitude), 4326),
-    "nx" SMALLINT DEFAULT (kma_lonlat_to_grid(longitude, latitude)).nx,
-    "ny" SMALLINT DEFAULT (kma_lonlat_to_grid(longitude, latitude)).ny,
+    "location" geometry,
+    "nx" SMALLINT,
+    "ny" SMALLINT,
 
     CONSTRAINT "user_locations_pk" PRIMARY KEY ("user_id")
 );
@@ -398,3 +466,42 @@ ALTER TABLE "push_token" ADD CONSTRAINT "push_token_users_fk" FOREIGN KEY ("user
 
 -- AddForeignKey
 ALTER TABLE "notification" ADD CONSTRAINT "notification_users_fk" FOREIGN KEY ("userId") REFERENCES "users_account"("user_id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+-- Trigger: posts 테이블 location 자동 계산
+CREATE OR REPLACE FUNCTION posts_set_location() RETURNS trigger AS $$
+BEGIN
+  IF NEW.longitude IS NOT NULL AND NEW.latitude IS NOT NULL THEN
+    NEW.location := st_setsrid(st_makepoint(NEW.longitude, NEW.latitude), 4326);
+  ELSE
+    NEW.location := NULL;
+  END IF;
+  RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_posts_location
+  BEFORE INSERT OR UPDATE OF longitude, latitude ON "posts"
+  FOR EACH ROW EXECUTE FUNCTION posts_set_location();
+
+-- Trigger: users_location 테이블 location, nx, ny 자동 계산
+CREATE OR REPLACE FUNCTION users_location_set_derived() RETURNS trigger AS $$
+DECLARE
+  grid grid_xy;
+BEGIN
+  IF NEW.longitude IS NOT NULL AND NEW.latitude IS NOT NULL THEN
+    NEW.location := st_setsrid(st_makepoint(NEW.longitude, NEW.latitude), 4326);
+    grid := kma_lonlat_to_grid(NEW.longitude, NEW.latitude);
+    NEW.nx := grid.nx;
+    NEW.ny := grid.ny;
+  ELSE
+    NEW.location := NULL;
+    NEW.nx := NULL;
+    NEW.ny := NULL;
+  END IF;
+  RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_users_location_derived
+  BEFORE INSERT OR UPDATE OF longitude, latitude ON "users_location"
+  FOR EACH ROW EXECUTE FUNCTION users_location_set_derived();

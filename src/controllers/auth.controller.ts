@@ -1,6 +1,7 @@
 import * as authService from '../services/auth.service.ts';
 import { successResponse } from '../utils/response.utils.ts';
 import { asyncHandler } from '../middleware/asyncHandler.ts';
+import { UnauthorizedError } from '../errors/AppError.ts';
 
 export const register = asyncHandler(async (req, res) => {
   const { username, password, longitude, latitude } = req.body;
@@ -11,7 +12,10 @@ export const register = asyncHandler(async (req, res) => {
 export const login = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
   const result = await authService.authenticateUser(username, password);
-  return successResponse(res, '로그인 성공', { token: result!.token }, 200);
+  if (!result) {
+    throw new UnauthorizedError('아이디 또는 비밀번호가 올바르지 않습니다');
+  }
+  return successResponse(res, '로그인 성공', { token: result.token }, 200);
 });
 
 export const refreshToken = asyncHandler(async (req, res) => {
