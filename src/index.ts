@@ -204,7 +204,7 @@ const server = http.createServer(app);
 // initSocketIO(server);
 
 // 4. 서버 실행
-server.listen(port, () => {
+server.listen({ port, host: '0.0.0.0' }, () => {
   logger.info(`Server is running on port ${port} in ${APP_CONFIG.nodeEnv} mode`);
 });
 
