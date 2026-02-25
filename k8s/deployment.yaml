@@ -73,7 +73,7 @@ spec:
                 secretKeyRef:
                   name: backend-secret
                   key: DB_PASSWORD
-            - name: REDIS_PASS # Redis 접속용 비밀번호 환경변수
+            - name: REDIS_PASSWORD # Redis 접속용 비밀번호 환경변수
               valueFrom:
                 secretKeyRef:
                   name: backend-secret
