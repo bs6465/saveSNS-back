@@ -55,7 +55,7 @@ export const errorHandler = (
   }
 
   captureError(err, {
-    userId: (req as unknown as { user?: { userId: string } }).user?.userId,
+    userId: req.user?.userId,
     requestId: (req as unknown as { id?: string }).id,
     path: `${req.method} ${req.path}`,
   });

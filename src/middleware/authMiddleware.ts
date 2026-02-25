@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import type { Request, Response, NextFunction } from 'express';
 import { UnauthorizedError } from '../errors/AppError.ts';
-import type { JwtPayload } from '../types/index.ts';
+import type { JwtPayload } from '../types/index.ts'; // module augmentation 활성화
 
 const verifyTokenAsync = (token: string, secret: string): Promise<JwtPayload> =>
   new Promise((resolve, reject) => {
@@ -21,7 +21,7 @@ export async function verifyToken(req: Request, _res: Response, next: NextFuncti
     }
 
     const decoded = await verifyTokenAsync(token, process.env.JWT_SECRET_KEY!);
-    (req as unknown as { user: JwtPayload }).user = decoded;
+    req.user = decoded;
     next();
   } catch (err) {
     if (err instanceof UnauthorizedError) {

@@ -4,6 +4,8 @@ const OPTIONAL_DEFAULTS: Record<string, string> = {
   PORT: '4000',
   NODE_ENV: 'development',
   STORAGE_TYPE: 'local',
+  REDIS_HOST: 'localhost',
+  REDIS_PORT: '6379',
 };
 
 export function validateEnv(): void {

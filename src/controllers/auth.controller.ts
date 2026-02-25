@@ -19,10 +19,7 @@ export const login = asyncHandler(async (req, res) => {
 });
 
 export const refreshToken = asyncHandler(async (req, res) => {
-  const oldToken = (
-    req as unknown as { user: { userId: string; username: string; nickname: string | null } }
-  ).user;
-  const { token: newToken } = await authService.refreshToken(oldToken);
+  const { token: newToken } = await authService.refreshToken(req.user!);
   return successResponse(res, '토큰 검증 및 갱신 성공', { token: newToken }, 200);
 });
 

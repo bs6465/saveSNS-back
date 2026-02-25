@@ -23,7 +23,7 @@ interface ForecastData {
 
 export const getUltraShortTermForecast = async (userId: string): Promise<ForecastData[]> => {
   const key = cacheKeys.weather(userId);
-  const cached = getCache<ForecastData[]>(key);
+  const cached = await getCache<ForecastData[]>(key);
   if (cached) return cached;
 
   const forecasts = await prisma.weather_ultra_by_user_id.findMany({
@@ -51,6 +51,6 @@ export const getUltraShortTermForecast = async (userId: string): Promise<Forecas
     wsd: f.wsd,
   }));
 
-  setCache(key, result, CACHE_TTL.weather);
+  await setCache(key, result, CACHE_TTL.weather);
   return result;
 };

@@ -4,7 +4,7 @@ import { asyncHandler } from '../middleware/asyncHandler.ts';
 import logger from '../config/logger.ts';
 
 export const createPost = asyncHandler(async (req, res) => {
-  const { userId } = (req as unknown as { user: { userId: string } }).user;
+  const { userId } = req.user!;
   const { contents, longitude, latitude, mediaUrls } = req.body;
 
   logger.info({ mediaCount: mediaUrls?.length }, 'Post creation requested');
@@ -14,9 +14,7 @@ export const createPost = asyncHandler(async (req, res) => {
 });
 
 export const getPosts = asyncHandler(async (req, res) => {
-  const { longitude, latitude, rangeMeters, cursor, limit, sortBy } = (
-    req as unknown as { validatedQuery: Record<string, unknown> }
-  ).validatedQuery;
+  const { longitude, latitude, rangeMeters, cursor, limit, sortBy } = req.validatedQuery!;
 
   const result = await postService.getPosts(
     longitude as number,
@@ -42,7 +40,7 @@ export const getPostById = asyncHandler(async (req, res) => {
 
 export const updatePost = asyncHandler(async (req, res) => {
   const { postId } = req.params;
-  const { userId } = (req as unknown as { user: { userId: string } }).user;
+  const { userId } = req.user!;
   const { contents } = req.body;
 
   const updatedPost = await postService.updatePost(postId as string, userId, contents);
@@ -51,7 +49,7 @@ export const updatePost = asyncHandler(async (req, res) => {
 
 export const deletePost = asyncHandler(async (req, res) => {
   const { postId } = req.params;
-  const { userId } = (req as unknown as { user: { userId: string } }).user;
+  const { userId } = req.user!;
 
   const deletedPost = await postService.deletePost(postId as string, userId);
   return successResponse(res, '글 삭제 성공', deletedPost, 200);

@@ -54,7 +54,7 @@ export const createPost = async (
     logger.info(`Media saved: ${mediaUrls.length} files for postId:${post.post_id}`);
   }
 
-  deleteCacheByPrefix('posts:');
+  await deleteCacheByPrefix('posts:');
 
   processUrgencyAnalysis(userId, contents, longitude, latitude, post.post_id).catch((err) => {
     logger.error({ err, postId: post.post_id }, 'Urgency analysis failed');
@@ -275,7 +275,7 @@ export const updatePost = async (postId: string, userId: string, contents: strin
     },
   });
 
-  deleteCacheByPrefix('posts:');
+  await deleteCacheByPrefix('posts:');
   logger.info(`Post updated: postId:${postId} by userId:${userId}`);
   return {
     postId: updatedPost.post_id,
@@ -304,7 +304,7 @@ export const deletePost = async (postId: string, userId: string): Promise<{ post
     where: { post_id: postId },
   });
 
-  deleteCacheByPrefix('posts:');
+  await deleteCacheByPrefix('posts:');
   logger.info(`Post deleted: postId:${postId} by userId:${userId}`);
   return { postId };
 };

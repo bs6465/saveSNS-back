@@ -3,9 +3,7 @@ import { successResponse } from '../utils/response.utils.ts';
 import { asyncHandler } from '../middleware/asyncHandler.ts';
 
 export const getNearbyShelters = asyncHandler(async (req, res) => {
-  const { longitude, latitude, radiusMeters, shelterType, limit } = (
-    req as unknown as { validatedQuery: Record<string, unknown> }
-  ).validatedQuery;
+  const { longitude, latitude, radiusMeters, shelterType, limit } = req.validatedQuery!;
   const data = await shelterService.getNearbyShelters(
     longitude as number,
     latitude as number,
@@ -17,9 +15,7 @@ export const getNearbyShelters = asyncHandler(async (req, res) => {
 });
 
 export const getSheltersByRegion = asyncHandler(async (req, res) => {
-  const { sidoName, sigunguName, shelterType } = (
-    req as unknown as { validatedQuery: Record<string, unknown> }
-  ).validatedQuery;
+  const { sidoName, sigunguName, shelterType } = req.validatedQuery!;
   const data = await shelterService.getSheltersByRegion(
     sidoName as string,
     sigunguName as string | null,
@@ -29,8 +25,7 @@ export const getSheltersByRegion = asyncHandler(async (req, res) => {
 });
 
 export const getSheltersForOffline = asyncHandler(async (req, res) => {
-  const { sidoName, shelterType } = (req as unknown as { validatedQuery: Record<string, unknown> })
-    .validatedQuery;
+  const { sidoName, shelterType } = req.validatedQuery!;
   const data = await shelterService.getSheltersForOffline(
     sidoName as string,
     shelterType as string | null,

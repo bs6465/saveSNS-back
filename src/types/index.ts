@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 
-// ─── Express 확장 ───────────────────────────────
+// ─── Express Request 전역 타입 보강 ─────────────
 
 export interface JwtPayload {
   userId: string;
@@ -10,14 +10,20 @@ export interface JwtPayload {
   exp?: number;
 }
 
-export interface AuthRequest extends Request {
-  user: JwtPayload;
-  validatedQuery?: Record<string, unknown>;
-  validatedParams?: Record<string, unknown>;
+// Express Request에 user, validatedQuery, validatedParams 속성 추가
+// authMiddleware, validate 미들웨어에서 설정하며, 컨트롤러에서 캐스팅 없이 접근 가능
+declare global {
+  namespace Express {
+    interface Request {
+      user?: JwtPayload;
+      validatedQuery?: Record<string, unknown>;
+      validatedParams?: Record<string, unknown>;
+    }
+  }
 }
 
 export type AsyncRequestHandler = (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction,
 ) => Promise<void | Response>;

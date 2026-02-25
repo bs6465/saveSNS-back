@@ -24,7 +24,7 @@ interface AirQualityData {
 
 export const getAirQualityBySido = async (sidoName: string): Promise<AirQualityData | null> => {
   const key = cacheKeys.airQuality(sidoName);
-  const cached = getCache<AirQualityData>(key);
+  const cached = await getCache<AirQualityData>(key);
   if (cached) return cached;
 
   const airQuality = await prisma.air_quality.findFirst({
@@ -65,7 +65,7 @@ export const getAirQualityBySido = async (sidoName: string): Promise<AirQualityD
     dataTime: airQuality.data_time,
   };
 
-  setCache(key, result, CACHE_TTL.airQuality);
+  await setCache(key, result, CACHE_TTL.airQuality);
   return result;
 };
 

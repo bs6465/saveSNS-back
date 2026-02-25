@@ -14,7 +14,7 @@ interface ProfileData {
 
 export const getProfile = async (userId: string): Promise<ProfileData | null> => {
   const key = cacheKeys.profile(userId);
-  const cached = getCache<ProfileData>(key);
+  const cached = await getCache<ProfileData>(key);
   if (cached) return cached;
 
   const profile = await prisma.users_account.findUnique({
@@ -33,7 +33,7 @@ export const getProfile = async (userId: string): Promise<ProfileData | null> =>
       }
     : null;
 
-  if (result) setCache(key, result, CACHE_TTL.profile);
+  if (result) await setCache(key, result, CACHE_TTL.profile);
   return result;
 };
 
@@ -65,7 +65,7 @@ export const updateProfile = async (userId: string, nickname: string): Promise<P
       nickname: true,
     },
   });
-  deleteCache(cacheKeys.profile(userId));
+  await deleteCache(cacheKeys.profile(userId));
   logger.info(`Profile updated: userId:${userId}, nickname:${nickname}`);
   return {
     userId: updatedProfile.user_id,

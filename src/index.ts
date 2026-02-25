@@ -17,6 +17,7 @@ import { initSentry } from './config/sentry.ts';
 import { metricsMiddleware, getMetricsText, setGauge } from './config/metrics.ts';
 import logger, { genReqId } from './config/logger.ts';
 import { prisma } from './prismaClient.ts';
+import { connectRedis, disconnectRedis, redis } from './config/redis.ts';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger.ts';
 
@@ -122,10 +123,19 @@ app.get('/health', async (req: Request, res: Response) => {
     health.database = 'disconnected';
     setGauge('database_connection_status', {}, 0);
     logger.error({ err }, 'Health check: database unreachable');
-    return res.status(503).json(health);
   }
 
-  return res.status(200).json(health);
+  try {
+    await redis.ping();
+    health.redis = 'connected';
+  } catch (err) {
+    health.status = 'degraded';
+    health.redis = 'disconnected';
+    logger.error({ err }, 'Health check: redis unreachable');
+  }
+
+  const statusCode = health.status === 'ok' ? 200 : 503;
+  return res.status(statusCode).json(health);
 });
 
 // Prometheus 메트릭 엔드포인트
@@ -204,6 +214,8 @@ const server = http.createServer(app);
 // initSocketIO(server);
 
 // 4. 서버 실행
+await connectRedis();
+
 server.listen({ port, host: '0.0.0.0' }, () => {
   logger.info(`Server is running on port ${port} in ${APP_CONFIG.nodeEnv} mode`);
 });
@@ -215,10 +227,11 @@ function gracefulShutdown(signal: string): void {
   server.close(async () => {
     logger.info('HTTP server closed');
     try {
+      await disconnectRedis();
       await prisma.$disconnect();
-      logger.info('Database connections closed');
+      logger.info('Database and Redis connections closed');
     } catch (err) {
-      logger.error({ err }, 'Error during database disconnect');
+      logger.error({ err }, 'Error during disconnect');
     }
     process.exit(0);
   });
