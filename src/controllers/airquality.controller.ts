@@ -18,3 +18,11 @@ export const getAirQualityBySido = asyncHandler(async (req, res) => {
   }
   return successResponse(res, '대기질 조회 성공', airQuality, 200);
 });
+
+export const getAirQualityForecast = asyncHandler(async (req, res) => {
+  const forecast = await airqualityService.getAirQualityForecastByUserId(req.user!.userId);
+  if (!forecast || forecast.length === 0) {
+    return successResponse(res, '대기질 예보 정보가 없습니다', [], 200);
+  }
+  return successResponse(res, '대기질 예보 조회 성공', forecast, 200);
+});

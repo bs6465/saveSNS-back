@@ -67,6 +67,9 @@ router.get('/', verifyToken, airqualityController.getAirQuality);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
+// GET /api/airquality/forecast - 사용자 위치 기반 대기질 예보 조회
+router.get('/forecast', verifyToken, airqualityController.getAirQualityForecast);
+
 // GET /api/airquality/:sidoName - 시도별 대기질 조회
 router.get('/:sidoName', verifyToken, airqualityController.getAirQualityBySido);
 

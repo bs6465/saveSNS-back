@@ -3,6 +3,7 @@ import asyncpg
 import httpx
 from datetime import datetime
 import os
+import re
 
 """
 지역 뉴스 수집 스크립트
@@ -25,25 +26,25 @@ API_URL = "https://openapi.naver.com/v1/search/news"
 
 DB_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-# 시도별 검색 키워드 매핑
+# 시도별 검색 키워드 매핑 (키워드 수 축소 - 지역당 최대 2개)
 REGION_KEYWORDS = {
-    '서울': ['서울', '강남', '종로', '마포'],
-    '부산': ['부산', '해운대', '서면'],
+    '서울': ['서울'],
+    '부산': ['부산'],
     '대구': ['대구'],
-    '인천': ['인천', '송도'],
+    '인천': ['인천'],
     '광주': ['광주광역시'],
-    '대전': ['대전', '유성구'],
+    '대전': ['대전'],
     '울산': ['울산'],
-    '세종': ['세종시', '세종특별자치시'],
-    '경기': ['경기도', '수원', '성남', '고양'],
-    '강원': ['강원도', '춘천', '원주'],
-    '충북': ['충청북도', '청주'],
-    '충남': ['충청남도', '천안', '아산'],
-    '전북': ['전라북도', '전주', '익산'],
-    '전남': ['전라남도', '목포', '여수'],
-    '경북': ['경상북도', '포항', '구미'],
-    '경남': ['경상남도', '창원', '김해'],
-    '제주': ['제주도', '제주시']
+    '세종': ['세종시'],
+    '경기': ['경기도'],
+    '강원': ['강원도'],
+    '충북': ['충청북도'],
+    '충남': ['충청남도'],
+    '전북': ['전라북도'],
+    '전남': ['전라남도'],
+    '경북': ['경상북도'],
+    '경남': ['경상남도'],
+    '제주': ['제주도']
 }
 
 
@@ -57,43 +58,57 @@ def parse_pubdate(date_str):
 
 def clean_html(text):
     """HTML 태그 제거"""
-    import re
     if not text:
         return ''
     clean = re.compile('<.*?>')
     return re.sub(clean, '', text).replace('&quot;', '"').replace('&amp;', '&')
 
 
-async def fetch_news_for_region(client, region_code, keywords, sem):
-    """특정 지역의 뉴스 검색"""
+async def verify_credentials(client):
+    """API 자격증명 유효성 사전 검증"""
     headers = {
         'X-Naver-Client-Id': NAVER_CLIENT_ID,
         'X-Naver-Client-Secret': NAVER_CLIENT_SECRET
     }
+    params = {'query': '뉴스', 'display': '1', 'sort': 'date'}
 
-    all_records = []
+    try:
+        response = await client.get(API_URL, params=params, headers=headers, timeout=10.0)
+        if response.status_code == 200:
+            print("API credentials verified successfully")
+            return True
+        elif response.status_code == 401:
+            print(f"ERROR: Naver API authentication failed (HTTP 401)")
+            print(f"Response: {response.text}")
+            print("Please check NAVER_CLIENT_ID and NAVER_CLIENT_SECRET environment variables.")
+            print("Also verify the 'Search' scope is enabled in Naver Developer Console.")
+            return False
+        else:
+            print(f"WARNING: Unexpected status during auth check: HTTP {response.status_code}")
+            print(f"Response: {response.text}")
+            return False
+    except Exception as e:
+        print(f"ERROR: Failed to verify credentials: {e}")
+        return False
 
-    async with sem:
-        for keyword in keywords[:2]:  # 키워드당 최대 2개만
-            params = {
-                'query': f'{keyword} 지역',
-                'display': '20',
-                'sort': 'date'
-            }
 
-            try:
-                response = await client.get(API_URL, params=params, headers=headers, timeout=10.0)
-                if response.status_code != 200:
-                    print(f"Error fetching news for {keyword}: HTTP {response.status_code}")
-                    print("Response data:", response.text)
-                    continue
+async def fetch_news_for_keyword(client, keyword, region_code, headers, max_retries=3):
+    """단일 키워드에 대한 뉴스 검색 (재시도 로직 포함)"""
+    params = {
+        'query': f'{keyword} 지역',
+        'display': '20',
+        'sort': 'date'
+    }
 
+    for attempt in range(max_retries):
+        try:
+            response = await client.get(API_URL, params=params, headers=headers, timeout=10.0)
+
+            if response.status_code == 200:
                 data = response.json()
                 items = data.get('items', [])
 
-                print(f"Fetched {len(items)} news for {keyword} in {region_code}")
-                print("Response data:", data)
-
+                records = []
                 for item in items:
                     record = {
                         'title': clean_html(item.get('title', '')),
@@ -104,16 +119,46 @@ async def fetch_news_for_region(client, region_code, keywords, sem):
                         'region_code': region_code,
                         'published_at': parse_pubdate(item.get('pubDate'))
                     }
-
                     if record['title'] and record['link']:
-                        all_records.append(record)
+                        records.append(record)
 
-                await asyncio.sleep(0.1)  # API 호출 간격
+                print(f"Fetched {len(records)} news for '{keyword}' ({region_code})")
+                return records
 
-            except Exception as e:
-                print(f"Error fetching news for {keyword}: {e}")
+            elif response.status_code == 429:
+                # Rate limit - 지수 백오프 재시도
+                wait_time = 2 ** (attempt + 1)  # 2, 4, 8초
+                print(f"Rate limited for '{keyword}', retrying in {wait_time}s... (attempt {attempt + 1}/{max_retries})")
+                await asyncio.sleep(wait_time)
+                continue
 
-    print(f"Fetched {len(all_records)} news for {region_code}")
+            elif response.status_code == 401:
+                print(f"Auth failed for '{keyword}': {response.text}")
+                return []  # 인증 실패는 재시도 불필요
+
+            else:
+                print(f"Error fetching news for '{keyword}': HTTP {response.status_code}")
+                return []
+
+        except Exception as e:
+            print(f"Error fetching news for '{keyword}': {e}")
+            if attempt < max_retries - 1:
+                await asyncio.sleep(2)
+            continue
+
+    print(f"Max retries exceeded for '{keyword}'")
+    return []
+
+
+async def fetch_news_for_region(client, region_code, keywords, headers):
+    """특정 지역의 뉴스를 순차적으로 검색 (rate limit 방지)"""
+    all_records = []
+
+    for keyword in keywords:
+        records = await fetch_news_for_keyword(client, keyword, region_code, headers)
+        all_records.extend(records)
+        await asyncio.sleep(0.3)  # 키워드 간 간격
+
     return all_records
 
  
@@ -129,20 +174,26 @@ async def main():
         return  # DB 연결 실패 시 정상 종료 (재시도 방지)
 
     try:
-        sem = asyncio.Semaphore(3)  # 동시 요청 제한
+        headers = {
+            'X-Naver-Client-Id': NAVER_CLIENT_ID,
+            'X-Naver-Client-Secret': NAVER_CLIENT_SECRET
+        }
         all_records = []
 
         async with httpx.AsyncClient() as client:
-            print("Fetching local news...")
-            tasks = [
-                fetch_news_for_region(client, region, keywords, sem)
-                for region, keywords in REGION_KEYWORDS.items()
-            ]
-            results = await asyncio.gather(*tasks)
+            # 사전 인증 검증
+            print("Verifying Naver API credentials...")
+            if not await verify_credentials(client):
+                print("Aborting: API credentials are invalid.")
+                return
 
-            for res in results:
-                if res:
-                    all_records.extend(res)
+            print("Fetching local news...")
+
+            # 지역별 순차 처리 (rate limit 방지)
+            for region, keywords in REGION_KEYWORDS.items():
+                records = await fetch_news_for_region(client, region, keywords, headers)
+                all_records.extend(records)
+                await asyncio.sleep(0.3)  # 지역 간 간격
 
         print(f"Total records: {len(all_records)}")
 

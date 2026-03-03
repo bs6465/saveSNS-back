@@ -118,3 +118,37 @@ export const getAllLatestAirQuality = async (): Promise<AirQualityData[]> => {
   `;
   return airQualities;
 };
+
+interface AirQualityForecast {
+  sidoName: string;
+  informCode: string;
+  forecastDate: Date;
+  publishTime: Date;
+  grade: number;
+  informCause: string | null;
+  informOverall: string | null;
+}
+
+export const getAirQualityForecastByUserId = async (
+  userId: string,
+): Promise<AirQualityForecast[]> => {
+  const result = await prisma.$queryRaw<AirQualityForecast[]>`
+    SELECT
+      aqf.sido_name AS "sidoName",
+      aqf.inform_code AS "informCode",
+      aqf.forecast_date AS "forecastDate",
+      aqf.publish_time AS "publishTime",
+      aqf.grade,
+      aqf.inform_cause AS "informCause",
+      aqf.inform_overall AS "informOverall"
+    FROM users_location ul
+    JOIN sig s ON ST_Contains(s.geom, ul.location)
+    JOIN air_quality_forecast aqf ON aqf.sido_name = s.sido_nm
+    WHERE ul.user_id = ${userId}::uuid
+      AND aqf.forecast_date >= CURRENT_DATE
+    ORDER BY aqf.forecast_date ASC, aqf.inform_code ASC
+  `;
+
+  logger.info({ userId, count: result.length }, 'Air quality forecast retrieved for user');
+  return result;
+};
