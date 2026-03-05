@@ -212,6 +212,7 @@ async def main():
             """
 
             inserted = 0
+            errors = 0
             for r in all_records:
                 try:
                     result = await conn.execute(
@@ -224,18 +225,20 @@ async def main():
                         r['region_code'],
                         r['published_at']
                     )
-                    if 'INSERT' in result:
+                    if result == 'INSERT 0 1':
                         inserted += 1
                 except Exception as e:
-                    pass  # 중복 등 무시
+                    errors += 1
+                    if errors <= 3:  # 처음 3개만 출력
+                        print(f"Insert error: {e}")
 
             print(f"Inserted {inserted} new records")
 
-        # 오래된 뉴스 정리 (7일 이상)
+        # 오래된 뉴스 정리 (3일 이상)
         print("Cleaning up old news...")
         await conn.execute("""
             DELETE FROM local_news
-            WHERE "publishedAt" < NOW() - INTERVAL '7 days';
+            WHERE "publishedAt" < NOW() - INTERVAL '3 days';
         """)
         print("Done.")
 

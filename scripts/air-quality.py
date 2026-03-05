@@ -367,16 +367,16 @@ async def main():
                 await conn.executemany(forecast_query, forecast_params)
                 print(f"Upserted {len(forecast_params)} forecast records")
 
-        # 오래된 데이터 정리 (7일 이상)
+        # 오래된 데이터 정리 (3일 이상)
         print("=" * 50)
         print("Cleaning up old records...")
         await conn.execute("""
             DELETE FROM air_quality
-            WHERE data_time < NOW() - INTERVAL '7 days';
+            WHERE data_time < NOW() - INTERVAL '3 days';
         """)
         await conn.execute("""
             DELETE FROM air_quality_forecast
-            WHERE forecast_date < NOW() - INTERVAL '7 days';
+            WHERE forecast_date < NOW() - INTERVAL '3 days';
         """)
         print("Done.")
 

@@ -191,11 +191,11 @@ async def main():
             await conn.executemany(query, params_list)
             print(f"Upserted {len(params_list)} records")
 
-        # 오래된 데이터 정리 (30일 이상)
+        # 오래된 데이터 정리 (3일 이상)
         print("Cleaning up old records...")
         await conn.execute("""
             DELETE FROM disaster_alert
-            WHERE crt_dt < NOW() - INTERVAL '30 days';
+            WHERE crt_dt < NOW() - INTERVAL '3 days';
         """)
         print("Done.")
 
