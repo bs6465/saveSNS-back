@@ -19,7 +19,7 @@ spec:
         spec:
           containers:
             - name: weather-ultra-short-term-forecast
-              image: bs6465/savesns-script-weather-ultra:2e3b81b040e319c88a5bb53d9e1c3c9175d2646f
+              image: bs6465/savesns-script-weather-ultra:105c5e9240a5a2022440f21e7b4b4b6357a57065
               imagePullPolicy: Always
 
               # [편의성] DB 접속 정보도 똑같이 가져옴 (코드 재사용)
