@@ -14,7 +14,7 @@ spec:
         spec:
           containers:
             - name: air-quality
-              image: bs6465/savesns-script-air-quality:105c5e9240a5a2022440f21e7b4b4b6357a57065
+              image: bs6465/savesns-script-air-quality:e711ec6b3b153f2f312c0b9891e64c32f3ecc8f3
               imagePullPolicy: Always
 
               envFrom:
@@ -57,7 +57,7 @@ spec:
         spec:
           containers:
             - name: disaster-alert
-              image: bs6465/savesns-script-disaster-alert:105c5e9240a5a2022440f21e7b4b4b6357a57065
+              image: bs6465/savesns-script-disaster-alert:e711ec6b3b153f2f312c0b9891e64c32f3ecc8f3
               imagePullPolicy: Always
 
               envFrom:
@@ -100,7 +100,7 @@ spec:
         spec:
           containers:
             - name: traffic-incidents
-              image: bs6465/savesns-script-traffic-incidents:105c5e9240a5a2022440f21e7b4b4b6357a57065
+              image: bs6465/savesns-script-traffic-incidents:e711ec6b3b153f2f312c0b9891e64c32f3ecc8f3
               imagePullPolicy: Always
 
               envFrom:
@@ -143,7 +143,7 @@ spec:
         spec:
           containers:
             - name: road-traffic
-              image: bs6465/savesns-script-road-traffic:105c5e9240a5a2022440f21e7b4b4b6357a57065
+              image: bs6465/savesns-script-road-traffic:e711ec6b3b153f2f312c0b9891e64c32f3ecc8f3
               imagePullPolicy: Always
 
               envFrom:
@@ -186,7 +186,7 @@ spec:
         spec:
           containers:
             - name: local-news
-              image: bs6465/savesns-script-local-news:105c5e9240a5a2022440f21e7b4b4b6357a57065
+              image: bs6465/savesns-script-local-news:e711ec6b3b153f2f312c0b9891e64c32f3ecc8f3
               imagePullPolicy: Always
 
               envFrom:
