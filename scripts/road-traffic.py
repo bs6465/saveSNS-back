@@ -3,15 +3,23 @@ import asyncpg
 import httpx
 from datetime import datetime
 import os
+import csv
+import io
 
 """
 도로 소통정보 수집 스크립트
-국가교통정보센터(ITS) API를 호출하여 실시간 도로 소통정보를 DB에 저장
+국가교통정보센터(ITS) 신규 API를 호출하여 실시간 도로 소통정보를 DB에 저장
+API 문서: https://www.its.go.kr/opendata/opendataList?service=traffic
+
+신규 API(trafficInfo)는 좌표를 반환하지 않으므로, link_coordinates 테이블에서
+표준노드링크 좌표를 참조합니다. 최초 실행 시 link_coordinates 테이블을
+표준노드링크 데이터로 채워야 합니다 (nodelink.its.go.kr).
+
 환경 변수: ITS_API_KEY, DB_USER, DB_NAME, DB_PASSWORD, DB_HOST, DB_PORT
-DB 테이블: road_traffic
+DB 테이블: road_traffic, link_coordinates (좌표 캐시)
 """
 
-ITS_API_KEY = os.getenv('ITS_API_KEY').strip()
+ITS_API_KEY = (os.getenv('ITS_API_KEY') or '').strip()
 
 DB_USER = os.getenv('DB_USER')
 DB_NAME = os.getenv('DB_NAME')
@@ -19,8 +27,11 @@ DB_PASSWORD = os.getenv('DB_PASSWORD')
 DB_HOST = os.getenv('DB_HOST')
 DB_PORT = os.getenv('DB_PORT')
 
-# 국가교통정보센터 실시간 도로 소통정보 API
-API_URL = "http://openapi.its.go.kr:8082/api/NLinkSpeedInfo"
+# 국가교통정보센터 실시간 도로 소통정보 API (신규 엔드포인트)
+API_URL = "https://openapi.its.go.kr:9443/trafficInfo"
+
+# ITS 공개 표준노드링크 참조 CSV
+NODE_LINK_CSV_URL = "https://www.its.go.kr/file/opendata/traffic/node_link_info.csv"
 
 DB_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
@@ -51,18 +62,29 @@ def get_status_from_speed(speed, road_type='일반'):
             return 3
 
 
-def parse_coords(coord_str):
-    """좌표 문자열 파싱"""
-    try:
-        return float(coord_str) if coord_str else None
-    except (ValueError, TypeError):
-        return None
+async def ensure_link_coords_table(conn):
+    """link_coordinates 캐시 테이블 생성 (없으면)"""
+    await conn.execute('''
+        CREATE TABLE IF NOT EXISTS link_coordinates (
+            link_id VARCHAR(50) PRIMARY KEY,
+            longitude DOUBLE PRECISION NOT NULL,
+            latitude DOUBLE PRECISION NOT NULL,
+            road_name VARCHAR(100),
+            updated_at TIMESTAMP DEFAULT NOW()
+        )
+    ''')
+
+
+async def load_link_coords(conn):
+    """DB 캐시에서 링크 좌표 매핑 로드"""
+    rows = await conn.fetch('SELECT link_id, longitude, latitude FROM link_coordinates')
+    return {row['link_id']: (row['longitude'], row['latitude']) for row in rows}
 
 
 async def fetch_road_traffic(client):
-    """도로 소통정보 데이터 조회"""
+    """도로 소통정보 데이터 조회 (신규 API)"""
     params = {
-        'key': ITS_API_KEY,
+        'apiKey': ITS_API_KEY,
         'type': 'all',
         'getType': 'json'
     }
@@ -76,9 +98,20 @@ async def fetch_road_traffic(client):
 
         data = response.json()
 
-        # API 응답 구조 확인
+        # 신규 API 응답: { header: { resultCode, resultMsg }, body: { totalCount, items: [...] } }
+        header = data.get('header', {})
+        if str(header.get('resultCode', '')) not in ('0', ''):
+            print(f"API error: {header.get('resultMsg', 'Unknown error')}")
+            return []
+
         body = data.get('body', {})
         items = body.get('items', [])
+
+        # XML→JSON 변환 시 items가 dict일 수 있음
+        if isinstance(items, dict):
+            items = items.get('item', [])
+        if isinstance(items, dict):
+            items = [items]
 
         if not items:
             print("No road traffic data found")
@@ -88,28 +121,23 @@ async def fetch_road_traffic(client):
         data_time = datetime.now()
 
         for item in items:
-            longitude = parse_coords(item.get('startNodeX') or item.get('coordX'))
-            latitude = parse_coords(item.get('startNodeY') or item.get('coordY'))
-
-            if longitude is None or latitude is None:
-                continue
-
             speed = None
             try:
                 speed = int(float(item.get('speed', 0)))
             except (ValueError, TypeError):
                 speed = None
 
-            road_name = item.get('roadName', '') or item.get('linkId', '')
-            road_type = '고속도로' if item.get('roadType') == '1' else '일반'
+            road_name = item.get('roadName', '') or ''
+            link_id = str(item.get('linkId', '') or '')
+
+            if not link_id:
+                continue
 
             record = {
                 'road_name': road_name[:100] if road_name else 'Unknown',
-                'link_id': str(item.get('linkId', ''))[:50],
+                'link_id': link_id[:50],
                 'speed': speed,
-                'status': get_status_from_speed(speed, road_type),
-                'longitude': longitude,
-                'latitude': latitude,
+                'status': get_status_from_speed(speed),
                 'data_time': data_time
             }
             records.append(record)
@@ -134,7 +162,10 @@ async def main():
         return  # DB 연결 실패 시 정상 종료 (재시도 방지)
 
     try:
-        async with httpx.AsyncClient() as client:
+        # link_coordinates 캐시 테이블 준비
+        await ensure_link_coords_table(conn)
+
+        async with httpx.AsyncClient(verify=False) as client:
             print("Fetching road traffic data...")
             records = await fetch_road_traffic(client)
 
@@ -142,7 +173,38 @@ async def main():
             print("No records fetched, skipping DB insert")
             return  # 데이터 없으면 정상 종료
 
-        print(f"Inserting {len(records)} records to database...")
+        # 좌표 매핑 로드
+        print("Loading link coordinates from cache...")
+        link_coords = await load_link_coords(conn)
+        print(f"Cached link coordinates: {len(link_coords)}")
+
+        if not link_coords:
+            print("WARNING: link_coordinates table is empty!")
+            print("신규 API(trafficInfo)는 좌표를 반환하지 않습니다.")
+            print("표준노드링크 데이터(nodelink.its.go.kr)에서 좌표를 로드해야 합니다.")
+            print("link_coordinates 테이블에 (link_id, longitude, latitude) 데이터를 삽입하세요.")
+            return
+
+        # 좌표가 있는 레코드만 필터링
+        insertable = []
+        skipped = 0
+        for r in records:
+            coords = link_coords.get(r['link_id'])
+            if coords:
+                r['longitude'] = coords[0]
+                r['latitude'] = coords[1]
+                insertable.append(r)
+            else:
+                skipped += 1
+
+        if not insertable:
+            print(f"No records with matching coordinates (total: {len(records)}, skipped: {skipped})")
+            return
+
+        if skipped > 0:
+            print(f"Skipped {skipped}/{len(records)} records without coordinates")
+
+        print(f"Inserting {len(insertable)} records to database...")
 
         # 기존 데이터 삭제 후 새 데이터 삽입 (전체 갱신)
         await conn.execute("DELETE FROM road_traffic WHERE data_time < NOW() - INTERVAL '1 hour';")
@@ -163,7 +225,7 @@ async def main():
                 r['road_name'], r['link_id'], r['speed'], r['status'],
                 r['longitude'], r['latitude'], r['data_time']
             )
-            for r in records
+            for r in insertable
         ]
 
         # 배치 삽입 (1000개 단위)

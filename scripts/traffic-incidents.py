@@ -6,12 +6,13 @@ import os
 
 """
 교통 돌발상황 수집 스크립트
-국가교통정보센터(ITS) API를 호출하여 돌발상황 데이터를 DB에 저장
+국가교통정보센터(ITS) 신규 API를 호출하여 돌발상황 데이터를 DB에 저장
+API 문서: https://www.its.go.kr/opendata/opendataList?service=event
 환경 변수: ITS_API_KEY, DB_USER, DB_NAME, DB_PASSWORD, DB_HOST, DB_PORT
 DB 테이블: traffic_incidents
 """
 
-ITS_API_KEY = os.getenv('ITS_API_KEY').strip()
+ITS_API_KEY = (os.getenv('ITS_API_KEY') or '').strip()
 
 DB_USER = os.getenv('DB_USER')
 DB_NAME = os.getenv('DB_NAME')
@@ -19,17 +20,20 @@ DB_PASSWORD = os.getenv('DB_PASSWORD')
 DB_HOST = os.getenv('DB_HOST')
 DB_PORT = os.getenv('DB_PORT')
 
-# 국가교통정보센터 돌발상황 API
-API_URL = "http://openapi.its.go.kr:8082/api/NIncidentIdentInfo"
+# 국가교통정보센터 돌발상황 API (신규 엔드포인트)
+API_URL = "https://openapi.its.go.kr:9443/eventInfo"
 
 DB_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-# 돌발 유형 코드 매핑
-INCIDENT_TYPE_MAP = {
-    '1': '사고',
-    '2': '공사',
-    '3': '행사',
-    '4': '기타'
+# 돌발 유형 매핑 (신규 API eventType 한글 → DB 저장값)
+EVENT_TYPE_MAP = {
+    '교통사고': '사고',
+    '공사': '공사',
+    '작업': '공사',
+    '기상': '기상',
+    '기타돌발': '기타',
+    '재난': '재난',
+    '기타': '기타',
 }
 
 
@@ -52,17 +56,28 @@ def parse_coords(coord_str):
         return None
 
 
+def parse_severity(lanes_block_type):
+    """차로 차단 유형으로부터 심각도 파싱 (0~3)"""
+    try:
+        if not lanes_block_type:
+            return 1
+        val = int(lanes_block_type)
+        return val if 0 <= val <= 3 else 1
+    except (ValueError, TypeError):
+        return 1
+
+
 async def fetch_traffic_incidents(client):
-    """돌발상황 데이터 조회"""
+    """돌발상황 데이터 조회 (신규 API)"""
     params = {
-        'key': ITS_API_KEY,
-        'type': 'all',  # 전체 조회
+        'apiKey': ITS_API_KEY,
+        'type': 'all',
+        'eventType': 'all',
         'getType': 'json'
     }
 
     print("Requesting traffic incidents from ITS API...")
     print("API URL:", API_URL)
-    print("Parameters:", params)
     print()
 
     try:
@@ -73,10 +88,21 @@ async def fetch_traffic_incidents(client):
             return []
 
         data = response.json()
-        print(f"Received data: {data}")
-        # API 응답 구조 확인
+
+        # 신규 API 응답: { header: { resultCode, resultMsg }, body: { totalCount, items: [...] } }
+        header = data.get('header', {})
+        if str(header.get('resultCode', '')) not in ('0', ''):
+            print(f"API error: {header.get('resultMsg', 'Unknown error')}")
+            return []
+
         body = data.get('body', {})
         items = body.get('items', [])
+
+        # XML→JSON 변환 시 items가 dict일 수 있음
+        if isinstance(items, dict):
+            items = items.get('item', [])
+        if isinstance(items, dict):
+            items = [items]
 
         if not items:
             print("No traffic incidents found")
@@ -90,21 +116,28 @@ async def fetch_traffic_incidents(client):
 
             longitude = parse_coords(item.get('coordX'))
             latitude = parse_coords(item.get('coordY'))
-            
+
             if longitude is None or latitude is None:
                 continue
 
+            # 고유 ID: linkId + startDate 조합
+            link_id = str(item.get('linkId', '') or '')
+            start_date_str = str(item.get('startDate', '') or '')
+            incident_id = f"{link_id}_{start_date_str}" if link_id else start_date_str
+
+            event_type = item.get('eventType', '기타') or '기타'
+
             record = {
-                'incident_id': item.get('incidentId') or str(item.get('idx', '')),
-                'type': INCIDENT_TYPE_MAP.get(str(item.get('incidentType', '')), '기타'),
-                'title': item.get('roadName', '') + ' ' + item.get('eventType', ''),
-                'description': item.get('incidentContent', ''),
-                'road_name': item.get('roadName', ''),
+                'incident_id': incident_id[:100],
+                'type': EVENT_TYPE_MAP.get(event_type, event_type),
+                'title': ((item.get('roadName', '') or '') + ' ' + (item.get('eventDetailType', '') or '')).strip(),
+                'description': item.get('message', '') or '',
+                'road_name': item.get('roadName', '') or '',
                 'longitude': longitude,
                 'latitude': latitude,
                 'start_time': start_time,
                 'end_time': parse_datetime(item.get('endDate')),
-                'severity': int(item.get('lanesBlockType', 1)) if item.get('lanesBlockType') else 1
+                'severity': parse_severity(item.get('lanesBlockType'))
             }
             records.append(record)
 
@@ -128,7 +161,7 @@ async def main():
         return  # DB 연결 실패 시 정상 종료 (재시도 방지)
 
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(verify=False) as client:
             print("Fetching traffic incidents...")
             records = await fetch_traffic_incidents(client)
 
