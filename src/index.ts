@@ -49,11 +49,8 @@ const corsOptions: cors.CorsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     if (!origin || CORS_CONFIG.allowedOrigins.includes(origin)) {
       callback(null, true);
-    } else if (
-      APP_CONFIG.nodeEnv === 'development' &&
-      origin.match(/^https?:\/\/localhost(:\d+)?$/)
-    ) {
-      // 개발 환경: localhost의 모든 포트 허용
+    } else if (origin.match(/^https?:\/\/localhost(:\d+)?$/)) {
+      // localhost의 모든 포트 허용 (Expo 웹 개발 서버 포트가 동적으로 변경됨)
       callback(null, true);
     } else {
       logger.warn({ origin }, 'Blocked by CORS');
