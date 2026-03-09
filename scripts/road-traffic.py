@@ -96,6 +96,7 @@ async def fetch_road_traffic(client):
             print("Response data:", response.text)
             print("url:", API_URL)
             print("params:", params)
+            
 
             return []
 

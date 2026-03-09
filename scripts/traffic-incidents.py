@@ -87,6 +87,7 @@ async def fetch_traffic_incidents(client):
             print("Response data:", response.text)
             print("url:", API_URL)
             print("params:", params)
+            
             return []
 
         data = response.json()
