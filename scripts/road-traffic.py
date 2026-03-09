@@ -94,6 +94,9 @@ async def fetch_road_traffic(client):
         if response.status_code != 200:
             print(f"Error: HTTP {response.status_code}")
             print("Response data:", response.text)
+            print("url:", API_URL)
+            print("params:", params)
+
             return []
 
         data = response.json()

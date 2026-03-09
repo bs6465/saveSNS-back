@@ -205,9 +205,9 @@ async def main():
                 INSERT INTO public.local_news (
                     title, summary, link, source, category, "regionCode", "publishedAt"
                 )
-                SELECT $1, $2, $3, $4, $5, $6, $7
+                SELECT $1::varchar(500), $2::text, $3::varchar(1000), $4::varchar(100), $5::varchar(50), $6::varchar(20), $7::timestamp
                 WHERE NOT EXISTS (
-                    SELECT 1 FROM local_news WHERE link = $3
+                    SELECT 1 FROM local_news WHERE link = $3::varchar(1000)
                 );
             """
 
