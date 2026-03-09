@@ -49,6 +49,7 @@ export const RATE_LIMIT = {
 export const CORS_CONFIG = {
   allowedOrigins: process.env.ALLOWED_ORIGINS?.split(',') || [
     'http://localhost:8081',
+    'http://localhost:8579',
     'http://localhost:19006',
     'exp://localhost:8081',
   ],

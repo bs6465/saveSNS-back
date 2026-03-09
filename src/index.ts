@@ -47,8 +47,13 @@ app.use(
 // CORS 설정 - 허용된 origin만 접근 가능
 const corsOptions: cors.CorsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-    // 프로덕션: 엄격한 origin 검증
     if (!origin || CORS_CONFIG.allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else if (
+      APP_CONFIG.nodeEnv === 'development' &&
+      origin.match(/^https?:\/\/localhost(:\d+)?$/)
+    ) {
+      // 개발 환경: localhost의 모든 포트 허용
       callback(null, true);
     } else {
       logger.warn({ origin }, 'Blocked by CORS');
