@@ -5,7 +5,7 @@ metadata:
 spec:
   schedule: '5 */4 * * *' # 매시 5분
   revisionHistoryLimit: 1
-  successfulJobsHistoryLimit: 2
+  successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
 
   jobTemplate:
@@ -48,7 +48,7 @@ metadata:
 spec:
   schedule: '30 */4 * * *'
   revisionHistoryLimit: 1
-  successfulJobsHistoryLimit: 2
+  successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
 
   jobTemplate:
@@ -91,7 +91,7 @@ metadata:
 spec:
   schedule: '30 */4 * * *'
   revisionHistoryLimit: 1
-  successfulJobsHistoryLimit: 2
+  successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
 
   jobTemplate:
@@ -134,7 +134,7 @@ metadata:
 spec:
   schedule: '30 */4 * * *' # 30분마다
   revisionHistoryLimit: 1
-  successfulJobsHistoryLimit: 2
+  successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
 
   jobTemplate:
@@ -177,7 +177,7 @@ metadata:
 spec:
   schedule: '0 */4 * * *' # 4시간마다
   revisionHistoryLimit: 1
-  successfulJobsHistoryLimit: 2
+  successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
 
   jobTemplate:
