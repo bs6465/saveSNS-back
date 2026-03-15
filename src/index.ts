@@ -205,6 +205,9 @@ app.use('/api/urgency', urgencyRoutes);
 import shelterRoutes from './routes/shelter.routes.ts';
 app.use('/api/shelters', shelterRoutes);
 
+import pollRoutes from './routes/poll.routes.ts';
+app.use('/api/polls', pollRoutes);
+
 // 3. 에러 처리 미들웨어 (모든 라우트 후에 등록)
 app.use(notFoundHandler); // 404 처리
 app.use(errorHandler); // 글로벌 에러 핸들러
@@ -213,7 +216,9 @@ app.use(errorHandler); // 글로벌 에러 핸들러
 // Express와 WebSocket 서버 통합
 // ------------------------------------
 const server = http.createServer(app);
-// initSocketIO(server);
+
+import { initSocketIO } from './config/socket.ts';
+initSocketIO(server);
 
 // 4. 서버 실행
 await connectRedis();

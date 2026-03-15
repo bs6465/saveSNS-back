@@ -2,6 +2,7 @@ import * as postService from '../services/post.service.ts';
 import { successResponse } from '../utils/response.utils.ts';
 import { asyncHandler } from '../middleware/asyncHandler.ts';
 import logger from '../config/logger.ts';
+import { emitToLocation } from '../config/socket.ts';
 
 export const createPost = asyncHandler(async (req, res) => {
   const { userId } = req.user!;
@@ -10,6 +11,16 @@ export const createPost = asyncHandler(async (req, res) => {
   logger.info({ mediaCount: mediaUrls?.length }, 'Post creation requested');
 
   const data = await postService.createPost(userId, contents, longitude, latitude, mediaUrls);
+
+  // Socket.IO로 위치 기반 새 글 알림 브로드캐스트
+  if (longitude && latitude) {
+    emitToLocation(latitude, longitude, 'post:new', {
+      postId: data.postId,
+      userId,
+      preview: contents?.slice(0, 50),
+    });
+  }
+
   return successResponse(res, '글 작성 성공', data, 201);
 });
 

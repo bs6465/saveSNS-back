@@ -127,6 +127,8 @@ model users_account {
   users_location   users_location?
   push_tokens      push_token[]
   notifications    notification[]
+  polls            poll[]
+  poll_votes       poll_vote[]
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -328,6 +330,54 @@ model notification {
 
   @@index([userId, createdAt], map: "idx_notification_user")
   @@index([userId, isRead], map: "idx_notification_unread")
+}
+
+/// 투표 모델
+model poll {
+  pollId      String    @id(map: "poll_pk") @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId      String    @db.Uuid
+  title       String    @db.VarChar(200)
+  description String?
+  longitude   Float?
+  latitude    Float?
+  expiresAt   DateTime  @db.Timestamp(6)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @db.Timestamp(6)
+
+  user    users_account @relation(fields: [userId], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "poll_users_fk")
+  options poll_option[]
+
+  @@index([userId], map: "idx_poll_user")
+  @@index([isActive, expiresAt], map: "idx_poll_active")
+}
+
+/// 투표 선택지 모델
+model poll_option {
+  optionId  String   @id(map: "poll_option_pk") @default(dbgenerated("uuidv7()")) @db.Uuid
+  pollId    String   @db.Uuid
+  label     String   @db.VarChar(100)
+  sortOrder Int      @default(0) @db.SmallInt
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+
+  poll  poll        @relation(fields: [pollId], references: [pollId], onDelete: Cascade, onUpdate: NoAction, map: "poll_option_poll_fk")
+  votes poll_vote[]
+
+  @@index([pollId], map: "idx_poll_option_poll")
+}
+
+/// 투표 참여 모델
+model poll_vote {
+  voteId    String   @id(map: "poll_vote_pk") @default(dbgenerated("uuidv7()")) @db.Uuid
+  pollId    String   @db.Uuid
+  optionId  String   @db.Uuid
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+
+  option poll_option   @relation(fields: [optionId], references: [optionId], onDelete: Cascade, onUpdate: NoAction, map: "poll_vote_option_fk")
+  user   users_account @relation(fields: [userId], references: [user_id], onDelete: Cascade, onUpdate: NoAction, map: "poll_vote_users_fk")
+
+  @@unique([pollId, userId], map: "uq_poll_vote_user")
+  @@index([optionId], map: "idx_poll_vote_option")
 }
 
 /// This view or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
