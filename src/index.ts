@@ -94,8 +94,8 @@ const authLimiter = rateLimit({
 // JSON 파싱 (Base64 이미지 업로드용 크기 증가)
 app.use(express.json({ limit: '50mb' }));
 
-// XSS 방어 미들웨어 (비밀번호 필드는 제외)
-app.use(xssSanitizer({ skipFields: ['password', 'currentPassword', 'newPassword'] }));
+// XSS 방어 미들웨어
+app.use(xssSanitizer());
 
 // Prometheus 메트릭 수집 미들웨어
 app.use(metricsMiddleware());

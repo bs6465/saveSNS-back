@@ -1,14 +1,9 @@
 import jwt from 'jsonwebtoken';
 import type { JwtPayload } from '../types/index.ts';
 
-function generateToken(user: {
-  userId: string;
-  username: string;
-  nickname?: string | null;
-}): string {
+function generateToken(user: { userId: string; nickname?: string | null }): string {
   const payload = {
     userId: user.userId,
-    username: user.username,
     nickname: user.nickname,
   };
 

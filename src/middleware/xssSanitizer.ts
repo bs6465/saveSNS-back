@@ -5,7 +5,7 @@ interface XssSanitizerOptions {
 }
 
 export const xssSanitizer = (options: XssSanitizerOptions = {}) => {
-  const { skipFields = ['password', 'currentPassword', 'newPassword'] } = options;
+  const { skipFields = [] } = options;
 
   return xss({
     allowedKeys: skipFields,

@@ -1,45 +1,21 @@
 import express from 'express';
-const router = express.Router(); // express의 라우터 기능을 사용
+const router = express.Router();
 import * as authController from '../controllers/auth.controller.ts';
 import { verifyToken } from '../middleware/authMiddleware.ts';
 import { validateBody } from '../middleware/validate.ts';
 import * as authSchema from '../schema/auth.schema.ts';
 
 /*
-로그인, 회원가입 routes
+소셜 로그인, 계정 연동 routes
 */
 
-// 경로와 컨트롤러 함수를 연결
+// ─── 소셜 로그인 (Public) ──────────────────────
 
 /**
  * @swagger
- * /auth:
- *   get:
- *     summary: 전체 사용자 목록 조회
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: 사용자 목록 조회 성공
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
- *       401:
- *         description: 인증 실패
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-router.get('/', verifyToken, authController.getUsers); // GET / 모든 유저 가져오기
-
-/**
- * @swagger
- * /auth/register:
+ * /auth/google:
  *   post:
- *     summary: 회원가입
+ *     summary: Google 소셜 로그인
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -47,83 +23,41 @@ router.get('/', verifyToken, authController.getUsers); // GET / 모든 유저 �
  *         application/json:
  *           schema:
  *             type: object
- *             required: [username, password, longitude, latitude]
+ *             required: [idToken]
  *             properties:
- *               username:
+ *               idToken:
  *                 type: string
- *                 description: 사용자 아이디
- *               password:
- *                 type: string
- *                 description: 비밀번호
- *               longitude:
- *                 type: number
- *                 description: 경도
- *               latitude:
- *                 type: number
- *                 description: 위도
- *     responses:
- *       201:
- *         description: 회원가입 성공
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
- *       400:
- *         description: 잘못된 요청
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       409:
- *         description: 이미 존재하는 사용자
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- */
-router.post('/register', validateBody(authSchema.registerSchema), authController.register); // POST / 회원가입
-
-/**
- * @swagger
- * /auth/login:
- *   post:
- *     summary: 로그인
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [username, password]
- *             properties:
- *               username:
- *                 type: string
- *                 description: 사용자 아이디
- *               password:
- *                 type: string
- *                 description: 비밀번호
+ *                 description: Google ID Token
  *     responses:
  *       200:
  *         description: 로그인 성공
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
- *       400:
- *         description: 잘못된 요청
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
- *       401:
- *         description: 인증 실패
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post('/login', validateBody(authSchema.loginSchema), authController.login); // POST / 로그인
+router.post('/google', validateBody(authSchema.googleLoginSchema), authController.googleLogin);
+
+/**
+ * @swagger
+ * /auth/kakao:
+ *   post:
+ *     summary: 카카오 소셜 로그인
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [accessToken]
+ *             properties:
+ *               accessToken:
+ *                 type: string
+ *                 description: 카카오 Access Token
+ *     responses:
+ *       200:
+ *         description: 로그인 성공
+ */
+router.post('/kakao', validateBody(authSchema.kakaoLoginSchema), authController.kakaoLogin);
+
+// ─── 토큰 관리 (Protected) ─────────────────────
 
 /**
  * @swagger
@@ -136,18 +70,8 @@ router.post('/login', validateBody(authSchema.loginSchema), authController.login
  *     responses:
  *       200:
  *         description: 토큰 갱신 성공
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
- *       401:
- *         description: 인증 실패
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post('/refresh-token', [verifyToken], authController.refreshToken); // POST / 토큰 검증 및 갱신
+router.post('/refresh-token', verifyToken, authController.refreshToken);
 
 /**
  * @swagger
@@ -160,17 +84,76 @@ router.post('/refresh-token', [verifyToken], authController.refreshToken); // PO
  *     responses:
  *       200:
  *         description: 로그아웃 성공
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/SuccessResponse'
- *       401:
- *         description: 인증 실패
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post('/logout', [verifyToken], authController.logout); // POST / 로그아웃
+router.post('/logout', verifyToken, authController.logout);
+
+// ─── 계정 연동 (Protected) ─────────────────────
+
+/**
+ * @swagger
+ * /auth/link:
+ *   get:
+ *     summary: 연동된 소셜 계정 목록 조회
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: 연동된 소셜 계정 목록
+ *   post:
+ *     summary: 소셜 계정 연동
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [provider, token]
+ *             properties:
+ *               provider:
+ *                 type: string
+ *                 enum: [google, kakao]
+ *               token:
+ *                 type: string
+ *                 description: 소셜 인증 토큰 (Google ID Token 또는 카카오 Access Token)
+ *     responses:
+ *       200:
+ *         description: 연동 성공
+ */
+router.get('/link', verifyToken, authController.getLinkedAccounts);
+router.post(
+  '/link',
+  verifyToken,
+  validateBody(authSchema.linkAccountSchema),
+  authController.linkAccount,
+);
+
+/**
+ * @swagger
+ * /auth/link/{provider}:
+ *   delete:
+ *     summary: 소셜 계정 연동 해제
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: provider
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [google, kakao]
+ *     responses:
+ *       200:
+ *         description: 연동 해제 성공
+ */
+router.delete('/link/:provider', verifyToken, authController.unlinkAccount);
+
+// ─── 관리용 (Protected) ────────────────────────
+
+router.get('/', verifyToken, authController.getUsers);
 
 export default router;

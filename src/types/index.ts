@@ -4,7 +4,6 @@ import type { Request, Response, NextFunction } from 'express';
 
 export interface JwtPayload {
   userId: string;
-  username: string;
   nickname: string;
   iat?: number;
   exp?: number;
@@ -90,7 +89,6 @@ export interface ProcessedImage {
 
 export interface UserFromDB {
   user_id: string;
-  username: string;
   nickname: string;
   created_at?: Date;
 }

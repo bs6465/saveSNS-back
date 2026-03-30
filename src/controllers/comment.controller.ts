@@ -8,7 +8,7 @@ import { ValidationError, NotFoundError, ForbiddenError } from '../errors/index.
 import logger from '../config/logger.ts';
 
 export const createComment = asyncHandler(async (req, res) => {
-  const { userId, nickname, username } = req.user!;
+  const { userId, nickname } = req.user!;
   const postId = req.params.postId as string;
   const { contents, parentId } = req.body;
 
@@ -31,7 +31,7 @@ export const createComment = asyncHandler(async (req, res) => {
     });
 
     if (post && post.user_id !== userId) {
-      const commenterName = nickname || username || '익명';
+      const commenterName = nickname || '익명';
       const previewContent = contents.trim().slice(0, 30) + (contents.length > 30 ? '...' : '');
 
       await notificationService.createNotification(

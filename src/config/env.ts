@@ -1,4 +1,13 @@
-const REQUIRED_VARS = ['DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT', 'DB_NAME', 'JWT_SECRET_KEY'];
+const REQUIRED_VARS = [
+  'DB_USER',
+  'DB_PASSWORD',
+  'DB_HOST',
+  'DB_PORT',
+  'DB_NAME',
+  'JWT_SECRET_KEY',
+  'GOOGLE_CLIENT_ID',
+  'KAKAO_REST_API_KEY',
+];
 
 const OPTIONAL_DEFAULTS: Record<string, string> = {
   PORT: '4000',

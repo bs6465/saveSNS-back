@@ -10,7 +10,7 @@ export interface PollWithResults {
   expiresAt: Date;
   isActive: boolean;
   createdAt: Date;
-  user: { userId: string; username: string; nickname: string | null };
+  user: { userId: string; nickname: string | null };
   options: {
     optionId: string;
     label: string;
@@ -54,8 +54,8 @@ function transformPoll(poll: Record<string, unknown>, currentUserId?: string): P
     isActive: p.isActive,
     createdAt: p.createdAt,
     user: p.user
-      ? { userId: p.user.user_id, username: p.user.username, nickname: p.user.nickname }
-      : { userId: p.userId, username: '', nickname: null },
+      ? { userId: p.user.user_id, nickname: p.user.nickname }
+      : { userId: p.userId, nickname: null },
     options,
     totalVotes,
     myVoteOptionId,
@@ -63,7 +63,7 @@ function transformPoll(poll: Record<string, unknown>, currentUserId?: string): P
 }
 
 const pollInclude = (currentUserId?: string) => ({
-  user: { select: { user_id: true, username: true, nickname: true } },
+  user: { select: { user_id: true, nickname: true } },
   options: {
     orderBy: { sortOrder: 'asc' as const },
     include: {

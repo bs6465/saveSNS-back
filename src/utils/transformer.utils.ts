@@ -20,7 +20,6 @@ export const userTransformer = {
     if (!user) return null;
     return {
       userId: user.user_id,
-      username: user.username,
       nickname: user.nickname,
     };
   },
@@ -29,7 +28,6 @@ export const userTransformer = {
     if (!user) return null;
     return {
       userId: user.user_id,
-      username: user.username,
       nickname: user.nickname,
       createdAt: user.created_at,
     };
@@ -138,8 +136,8 @@ export const notificationTransformer = {
 };
 
 export const selectFields = {
-  user: { user_id: true, username: true, nickname: true },
-  userProfile: { user_id: true, username: true, nickname: true, created_at: true },
+  user: { user_id: true, nickname: true },
+  userProfile: { user_id: true, nickname: true, created_at: true },
   postBasic: {
     post_id: true,
     user_id: true,

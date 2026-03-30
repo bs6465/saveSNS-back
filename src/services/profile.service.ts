@@ -8,7 +8,6 @@ import logger from '../config/logger.ts';
 
 interface ProfileData {
   userId: string;
-  username: string;
   nickname: string | null;
 }
 
@@ -21,14 +20,12 @@ export const getProfile = async (userId: string): Promise<ProfileData | null> =>
     where: { user_id: userId },
     select: {
       user_id: true,
-      username: true,
       nickname: true,
     },
   });
   const result: ProfileData | null = profile
     ? {
         userId: profile.user_id,
-        username: profile.username,
         nickname: profile.nickname,
       }
     : null;
@@ -61,7 +58,6 @@ export const updateProfile = async (userId: string, nickname: string): Promise<P
     data: { nickname },
     select: {
       user_id: true,
-      username: true,
       nickname: true,
     },
   });
@@ -69,7 +65,6 @@ export const updateProfile = async (userId: string, nickname: string): Promise<P
   logger.info(`Profile updated: userId:${userId}, nickname:${nickname}`);
   return {
     userId: updatedProfile.user_id,
-    username: updatedProfile.username,
     nickname: updatedProfile.nickname,
   };
 };

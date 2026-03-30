@@ -70,7 +70,6 @@ export const getLikedUsers = async (postId: string, limit: number = 20) => {
       user: {
         select: {
           user_id: true,
-          username: true,
           nickname: true,
         },
       },
@@ -83,7 +82,6 @@ export const getLikedUsers = async (postId: string, limit: number = 20) => {
 
   return likes.map((like) => ({
     userId: like.user.user_id,
-    username: like.user.username,
     nickname: like.user.nickname,
   }));
 };
@@ -97,7 +95,6 @@ export const getLikedPostsByUserId = async (userId: string, limit: number = 20) 
           users_account: {
             select: {
               user_id: true,
-              username: true,
               nickname: true,
             },
           },
@@ -116,7 +113,6 @@ export const getLikedPostsByUserId = async (userId: string, limit: number = 20) 
     createdAt: like.post.created_at,
     user: {
       userId: like.post.users_account.user_id,
-      username: like.post.users_account.username,
       nickname: like.post.users_account.nickname,
     },
   }));

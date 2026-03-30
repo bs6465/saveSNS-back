@@ -7,7 +7,7 @@ import { asyncHandler } from '../middleware/asyncHandler.ts';
 import logger from '../config/logger.ts';
 
 export const toggleLike = asyncHandler(async (req, res) => {
-  const { userId, nickname, username } = req.user!;
+  const { userId, nickname } = req.user!;
   const postId = req.params.postId as string;
 
   const result = await likeService.toggleLike(postId, userId);
@@ -22,7 +22,7 @@ export const toggleLike = asyncHandler(async (req, res) => {
       });
 
       if (post && post.user_id !== userId) {
-        const likerName = nickname || username || '익명';
+        const likerName = nickname || '익명';
 
         await notificationService.createNotification(
           post.user_id,

@@ -21,8 +21,6 @@ export const JWT_CONFIG = {
 };
 
 export const VALIDATION = {
-  password: { minLength: 8, requireLetter: true, requireNumber: true },
-  username: { minLength: 3, maxLength: 50 },
   nickname: { minLength: 2, maxLength: 30 },
   contents: { minLength: 1, maxLength: 5000 },
   comment: { minLength: 1, maxLength: 500 },

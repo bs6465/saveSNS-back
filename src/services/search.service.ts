@@ -22,7 +22,6 @@ interface PostResult {
 
 interface UserResult {
   userId: string;
-  username: string;
   nickname: string | null;
 }
 
@@ -104,10 +103,9 @@ export const searchUsers = async (
   const results = await prisma.$queryRaw<UserResult[]>`
     SELECT
       u.user_id AS "userId",
-      u.username,
       u.nickname
     FROM "users_account" u
-    WHERE (u.nickname ILIKE ${searchPattern} OR u.username ILIKE ${searchPattern})
+    WHERE u.nickname ILIKE ${searchPattern}
     ${cursorCondition}
     ORDER BY u.user_id DESC
     LIMIT ${limit + 1}

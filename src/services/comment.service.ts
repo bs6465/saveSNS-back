@@ -12,7 +12,7 @@ interface TransformedComment {
   contents: string;
   createdAt: Date;
   updatedAt: Date;
-  user: { userId: string; username: string; nickname: string | null } | null;
+  user: { userId: string; nickname: string | null } | null;
   replies: TransformedComment[];
 }
 
@@ -26,7 +26,7 @@ const transformComment = (comment: Record<string, unknown> | null): TransformedC
     contents: string;
     createdAt: Date;
     updatedAt: Date;
-    user?: { user_id: string; username: string; nickname: string | null };
+    user?: { user_id: string; nickname: string | null };
     replies?: Record<string, unknown>[];
   };
   return {
@@ -40,7 +40,6 @@ const transformComment = (comment: Record<string, unknown> | null): TransformedC
     user: c.user
       ? {
           userId: c.user.user_id,
-          username: c.user.username,
           nickname: c.user.nickname,
         }
       : null,
@@ -65,7 +64,6 @@ export const createComment = async (
       user: {
         select: {
           user_id: true,
-          username: true,
           nickname: true,
         },
       },
@@ -85,7 +83,6 @@ export const getCommentsByPostId = async (postId: string): Promise<TransformedCo
       user: {
         select: {
           user_id: true,
-          username: true,
           nickname: true,
         },
       },
@@ -94,7 +91,6 @@ export const getCommentsByPostId = async (postId: string): Promise<TransformedCo
           user: {
             select: {
               user_id: true,
-              username: true,
               nickname: true,
             },
           },
@@ -121,7 +117,6 @@ export const getCommentById = async (commentId: string): Promise<TransformedComm
       user: {
         select: {
           user_id: true,
-          username: true,
           nickname: true,
         },
       },
@@ -145,7 +140,6 @@ export const updateComment = async (
       user: {
         select: {
           user_id: true,
-          username: true,
           nickname: true,
         },
       },

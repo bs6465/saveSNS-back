@@ -4,7 +4,7 @@ import { HTTP_STATUS } from '../config/constants.ts';
 export const AUTH_ERRORS = {
   INVALID_CREDENTIALS: {
     code: 'INVALID_CREDENTIALS',
-    message: '아이디 또는 비밀번호가 잘못되었습니다',
+    message: '인증에 실패했습니다',
     status: HTTP_STATUS.UNAUTHORIZED,
   },
   TOKEN_EXPIRED: {
@@ -46,9 +46,14 @@ export const USER_ERRORS = {
     message: '사용자를 찾을 수 없습니다',
     status: HTTP_STATUS.NOT_FOUND,
   },
-  INVALID_PASSWORD: {
-    code: 'INVALID_PASSWORD',
-    message: '비밀번호가 올바르지 않습니다',
+  SOCIAL_ACCOUNT_ALREADY_LINKED: {
+    code: 'SOCIAL_ACCOUNT_ALREADY_LINKED',
+    message: '이미 연결된 소셜 계정입니다',
+    status: HTTP_STATUS.CONFLICT,
+  },
+  CANNOT_UNLINK_LAST_ACCOUNT: {
+    code: 'CANNOT_UNLINK_LAST_ACCOUNT',
+    message: '마지막 소셜 계정은 연결 해제할 수 없습니다',
     status: HTTP_STATUS.BAD_REQUEST,
   },
 } as const satisfies Record<string, ErrorCodeDef>;
