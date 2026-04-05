@@ -89,26 +89,63 @@ async def fetch_road_traffic(client):
         'getType': 'json'
     }
 
+    masked_key = ITS_API_KEY[:6] + '***' + ITS_API_KEY[-4:] if len(ITS_API_KEY) > 10 else '***'
+    print(f"API URL: {API_URL}")
+    print(f"API Key (masked): {masked_key} (length: {len(ITS_API_KEY)})")
+    print(f"Params: type={params['type']}, getType={params['getType']}")
+    print()
+
     try:
         response = await client.get(API_URL, params=params, timeout=60.0)
-        if response.status_code != 200:
-            print(f"Error: HTTP {response.status_code}")
-            print("Response data:", response.text)
-            print("url:", API_URL)
-            print("params:", params)
-            
 
+        print(f"--- Response ---")
+        print(f"Status: {response.status_code}")
+        print(f"Headers: {dict(response.headers)}")
+        print(f"URL: {str(response.url).replace(ITS_API_KEY, masked_key)}")
+        print(f"Body (raw, first 1000 chars): {response.text[:1000]}")
+        print(f"--- End Response ---")
+        print()
+
+        # 응답 파싱 (에러 응답도 JSON일 수 있음)
+        try:
+            data = response.json()
+        except Exception as parse_err:
+            print(f"JSON 파싱 실패: {parse_err}")
+            data = None
+
+        if response.status_code != 200:
+            msg = ''
+            if data and isinstance(data, dict):
+                msg = data.get('header', {}).get('resultMsg', '')
+            print(f"Error: HTTP {response.status_code} - {msg}")
+            if response.status_code == 401:
+                print("→ API 키가 유효하지 않거나 인증에 실패했습니다.")
+                print("→ ITS 포털(its.go.kr/opendata/opendataList)에서 키 상태를 확인하세요.")
             return []
 
-        data = response.json()
+        if data is None:
+            print("Error: 응답을 JSON으로 파싱할 수 없습니다.")
+            return []
 
         # 신규 API 응답: { header: { resultCode, resultMsg }, body: { totalCount, items: [...] } }
         header = data.get('header', {})
-        if str(header.get('resultCode', '')) not in ('0', ''):
-            print(f"API error: {header.get('resultMsg', 'Unknown error')}")
+        result_code = str(header.get('resultCode', ''))
+        result_msg = header.get('resultMsg', 'Unknown error')
+
+        if result_code not in ('0', ''):
+            print(f"API error (code {result_code}): {result_msg}")
+            if result_code == '4001':
+                print("→ 개인 제한량 초과: API 키 할당량이 소진되었거나 키가 비활성 상태입니다.")
             return []
 
         body = data.get('body', {})
+        if not isinstance(body, dict):
+            print(f"API가 빈 body를 반환했습니다 (type: {type(body).__name__}, value: {repr(body)})")
+            print("→ API 키 할당량 초과이거나 서버 문제일 수 있습니다.")
+            return []
+
+        print(f"totalCount: {body.get('totalCount', 'N/A')}")
+
         items = body.get('items', [])
 
         # XML→JSON 변환 시 items가 dict일 수 있음
