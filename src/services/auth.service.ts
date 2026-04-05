@@ -14,7 +14,9 @@ const KAKAO_REDIRECT_URI = 'https://api.save-sns.com/api/auth/kakao/callback';
 if (!KAKAO_REST_API_KEY) {
   logger.warn('KAKAO_REST_API_KEY is not set!');
 } else {
-  logger.info(`KAKAO_REST_API_KEY: ${KAKAO_REST_API_KEY.slice(0, 4)}...${KAKAO_REST_API_KEY.slice(-4)} (length: ${KAKAO_REST_API_KEY.length})`);
+  logger.info(
+    `KAKAO_REST_API_KEY: ${KAKAO_REST_API_KEY.slice(0, 4)}...${KAKAO_REST_API_KEY.slice(-4)} (length: ${KAKAO_REST_API_KEY.length})`,
+  );
   logger.info(`KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI}`);
 }
 
@@ -153,7 +155,14 @@ export const authenticateWithKakao = async (accessToken: string): Promise<AuthRe
 // ─── 카카오 콜백 (인가 코드 → JWT) ────────────────
 
 export const handleKakaoCallback = async (code: string): Promise<AuthResult> => {
-  logger.info({ code: code.slice(0, 10) + '...', clientId: KAKAO_REST_API_KEY.slice(0, 4) + '...', redirectUri: KAKAO_REDIRECT_URI }, 'Kakao token exchange starting');
+  logger.info(
+    {
+      code: code.slice(0, 10) + '...',
+      clientId: KAKAO_REST_API_KEY.slice(0, 4) + '...',
+      redirectUri: KAKAO_REDIRECT_URI,
+    },
+    'Kakao token exchange starting',
+  );
   // 인가 코드로 access_token 교환
   const tokenRes = await fetch('https://kauth.kakao.com/oauth/token', {
     method: 'POST',
