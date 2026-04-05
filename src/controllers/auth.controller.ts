@@ -14,6 +14,27 @@ export const kakaoLogin = asyncHandler(async (req, res) => {
   return successResponse(res, '카카오 로그인 성공', { token }, 200);
 });
 
+// 카카오 인가 코드 콜백 → JWT 발급 후 앱으로 딥링크 redirect
+export const kakaoCallback = asyncHandler(async (req, res) => {
+  const code = req.query.code as string;
+  if (!code) {
+    return res.redirect('savesns://auth/kakao/callback?error=no_code');
+  }
+
+  try {
+    const { token } = await authService.handleKakaoCallback(code);
+    return res.redirect(`savesns://auth/kakao/callback?token=${token}`);
+  } catch {
+    return res.redirect('savesns://auth/kakao/callback?error=auth_failed');
+  }
+});
+
+// 카카오 인증 URL 반환 (앱에서 직접 열기)
+export const kakaoAuthUrl = asyncHandler(async (_req, res) => {
+  const url = authService.getKakaoAuthUrl();
+  return successResponse(res, '카카오 인증 URL', { url }, 200);
+});
+
 export const refreshToken = asyncHandler(async (req, res) => {
   const { token: newToken } = await authService.refreshToken(req.user!);
   return successResponse(res, '토큰 갱신 성공', { token: newToken }, 200);

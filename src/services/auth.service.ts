@@ -7,6 +7,9 @@ import { ConflictError, UnauthorizedError } from '../errors/AppError.ts';
 소셜 로그인, 계정 연동 로직
 */
 
+const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY ?? '';
+const KAKAO_REDIRECT_URI = 'https://api.save-sns.com/api/auth/kakao/callback';
+
 interface AuthResult {
   token: string;
 }
@@ -137,6 +140,41 @@ export const authenticateWithGoogle = async (idToken: string): Promise<AuthResul
 export const authenticateWithKakao = async (accessToken: string): Promise<AuthResult> => {
   const userInfo = await verifyKakaoToken(accessToken);
   return findOrCreateUser('kakao', userInfo);
+};
+
+// ─── 카카오 콜백 (인가 코드 → JWT) ────────────────
+
+export const handleKakaoCallback = async (code: string): Promise<AuthResult> => {
+  // 인가 코드로 access_token 교환
+  const tokenRes = await fetch('https://kauth.kakao.com/oauth/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      client_id: KAKAO_REST_API_KEY,
+      redirect_uri: KAKAO_REDIRECT_URI,
+      code,
+    }).toString(),
+  });
+
+  if (!tokenRes.ok) {
+    const err = await tokenRes.text();
+    logger.warn({ error: err }, 'Kakao token exchange failed');
+    throw new UnauthorizedError('카카오 토큰 교환에 실패했습니다');
+  }
+
+  const tokenData = (await tokenRes.json()) as { access_token?: string };
+  if (!tokenData.access_token) {
+    throw new UnauthorizedError('카카오 액세스 토큰을 받지 못했습니다');
+  }
+
+  // access_token으로 사용자 정보 조회 → 로그인/회원가입
+  const userInfo = await verifyKakaoToken(tokenData.access_token);
+  return findOrCreateUser('kakao', userInfo);
+};
+
+export const getKakaoAuthUrl = (): string => {
+  return `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_REST_API_KEY}&redirect_uri=${encodeURIComponent(KAKAO_REDIRECT_URI)}&response_type=code`;
 };
 
 export const refreshToken = async (oldToken: {

@@ -57,6 +57,12 @@ router.post('/google', validateBody(authSchema.googleLoginSchema), authControlle
  */
 router.post('/kakao', validateBody(authSchema.kakaoLoginSchema), authController.kakaoLogin);
 
+// 카카오 백엔드 콜백 (GET - 카카오가 redirect로 호출)
+router.get('/kakao/callback', authController.kakaoCallback);
+
+// 카카오 인증 URL 조회 (앱에서 WebBrowser로 열기)
+router.get('/kakao/auth-url', authController.kakaoAuthUrl);
+
 // ─── 토큰 관리 (Protected) ─────────────────────
 
 /**
