@@ -164,9 +164,9 @@ if (APP_CONFIG.nodeEnv !== 'production') {
 
 // 2. 라우터(Routes) 임포트 및 설정
 
-// 인증 라우트 (더 엄격한 rate limiting 적용)
+// 인증 라우트 (콜백/auth-url은 일반 rate limit 적용)
 import authRoutes from './routes/auth.routes.ts';
-app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/auth', apiLimiter, authRoutes);
 
 // API 라우트에 일반 rate limiting 적용
 app.use('/api/', apiLimiter);
