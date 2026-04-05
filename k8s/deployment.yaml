@@ -105,6 +105,12 @@ spec:
                   name: backend-secret
                   key: CLOUDFRONT_DOMAIN
 
+            - name: ITS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: ITS_API_KEY
+
           # [HPA 필수 조건]
           # requests가 없으면 HPA가 기준을 못 잡아서 작동 안 함!
           resources:

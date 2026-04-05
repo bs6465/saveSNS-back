@@ -98,16 +98,6 @@ jobs:
           build-args: SCRIPT_NAME=traffic-incidents
           tags: ${{ secrets.DOCKER_USERNAME }}/savesns-script-traffic-incidents:${{ github.sha }}
 
-      - name: Build Script - road-traffic
-        if: steps.changes.outputs.scripts == 'true'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: Dockerfile.scripts
-          push: true
-          build-args: SCRIPT_NAME=road-traffic
-          tags: ${{ secrets.DOCKER_USERNAME }}/savesns-script-road-traffic:${{ github.sha }}
-
       - name: Build Script - local-news
         if: steps.changes.outputs.scripts == 'true'
         uses: docker/build-push-action@v4
@@ -142,7 +132,6 @@ jobs:
             sed -i "s|image: .*/savesns-script-air-quality:.*|image: ${DOCKER_USER}/savesns-script-air-quality:${{ github.sha }}|" k8s/data-collection-cronjobs.yaml
             sed -i "s|image: .*/savesns-script-disaster-alert:.*|image: ${DOCKER_USER}/savesns-script-disaster-alert:${{ github.sha }}|" k8s/data-collection-cronjobs.yaml
             sed -i "s|image: .*/savesns-script-traffic-incidents:.*|image: ${DOCKER_USER}/savesns-script-traffic-incidents:${{ github.sha }}|" k8s/data-collection-cronjobs.yaml
-            sed -i "s|image: .*/savesns-script-road-traffic:.*|image: ${DOCKER_USER}/savesns-script-road-traffic:${{ github.sha }}|" k8s/data-collection-cronjobs.yaml
             sed -i "s|image: .*/savesns-script-local-news:.*|image: ${DOCKER_USER}/savesns-script-local-news:${{ github.sha }}|" k8s/data-collection-cronjobs.yaml
           fi
 
