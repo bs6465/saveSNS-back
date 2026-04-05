@@ -11,6 +11,10 @@ const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY ?? '';
 const KAKAO_CLIENT_SECRET = process.env.KAKAO_CLIENT_SECRET ?? '';
 const KAKAO_REDIRECT_URI = 'https://api.save-sns.com/api/auth/kakao/callback';
 
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID ?? '';
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET ?? '';
+const GOOGLE_REDIRECT_URI = 'https://api.save-sns.com/api/auth/google/callback';
+
 if (!KAKAO_REST_API_KEY) {
   logger.warn('KAKAO_REST_API_KEY is not set!');
 } else {
@@ -195,6 +199,44 @@ export const handleKakaoCallback = async (code: string): Promise<AuthResult> => 
 
 export const getKakaoAuthUrl = (): string => {
   return `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_REST_API_KEY}&redirect_uri=${encodeURIComponent(KAKAO_REDIRECT_URI)}&response_type=code`;
+};
+
+// ─── Google 콜백 (인가 코드 → JWT) ────────────────
+
+export const handleGoogleCallback = async (code: string): Promise<AuthResult> => {
+  logger.info('Google token exchange starting');
+
+  const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      client_id: GOOGLE_CLIENT_ID,
+      client_secret: GOOGLE_CLIENT_SECRET,
+      redirect_uri: GOOGLE_REDIRECT_URI,
+      code,
+    }).toString(),
+  });
+
+  if (!tokenRes.ok) {
+    const err = await tokenRes.text();
+    logger.error({ status: tokenRes.status, error: err }, 'Google token exchange failed');
+    throw new UnauthorizedError('Google 토큰 교환에 실패했습니다');
+  }
+
+  const tokenData = (await tokenRes.json()) as { id_token?: string };
+  logger.info('Google token exchange success');
+
+  if (!tokenData.id_token) {
+    throw new UnauthorizedError('Google ID 토큰을 받지 못했습니다');
+  }
+
+  const userInfo = await verifyGoogleToken(tokenData.id_token);
+  return findOrCreateUser('google', userInfo);
+};
+
+export const getGoogleAuthUrl = (): string => {
+  return `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(GOOGLE_REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent('openid email profile')}&access_type=offline&prompt=consent`;
 };
 
 export const refreshToken = async (oldToken: {

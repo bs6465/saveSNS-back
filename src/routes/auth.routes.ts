@@ -63,6 +63,12 @@ router.get('/kakao/callback', authController.kakaoCallback);
 // 카카오 인증 URL 조회 (앱에서 WebBrowser로 열기)
 router.get('/kakao/auth-url', authController.kakaoAuthUrl);
 
+// Google 백엔드 콜백 (GET - Google이 redirect로 호출)
+router.get('/google/callback', authController.googleCallback);
+
+// Google 인증 URL 조회 (앱에서 WebBrowser로 열기)
+router.get('/google/auth-url', authController.googleAuthUrl);
+
 // ─── 토큰 관리 (Protected) ─────────────────────
 
 /**

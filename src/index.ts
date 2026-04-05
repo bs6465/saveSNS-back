@@ -24,6 +24,9 @@ import { swaggerSpec } from './config/swagger.ts';
 const app = express();
 const { port } = APP_CONFIG;
 
+// Cloudflare Tunnel / 리버스 프록시 뒤에서 실행되므로 trust proxy 설정
+app.set('trust proxy', 1);
+
 // Sentry 에러 트래킹 초기화 (SENTRY_DSN 환경변수가 설정된 경우에만)
 initSentry();
 

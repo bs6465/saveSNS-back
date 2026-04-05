@@ -40,6 +40,31 @@ export const kakaoAuthUrl = asyncHandler(async (_req, res) => {
   return successResponse(res, '카카오 인증 URL', { url }, 200);
 });
 
+// Google 인가 코드 콜백 → JWT 발급 후 앱으로 딥링크 redirect
+export const googleCallback = asyncHandler(async (req, res) => {
+  logger.info({ query: req.query }, 'Google callback received');
+  const code = req.query.code as string;
+  if (!code) {
+    logger.warn('Google callback: no code in query');
+    return res.redirect('savesns://auth/google/callback?error=no_code');
+  }
+
+  try {
+    const { token } = await authService.handleGoogleCallback(code);
+    logger.info('Google callback: login success');
+    return res.redirect(`savesns://auth/google/callback?token=${token}`);
+  } catch (err) {
+    logger.error({ err }, 'Google callback: auth failed');
+    return res.redirect('savesns://auth/google/callback?error=auth_failed');
+  }
+});
+
+// Google 인증 URL 반환
+export const googleAuthUrl = asyncHandler(async (_req, res) => {
+  const url = authService.getGoogleAuthUrl();
+  return successResponse(res, 'Google 인증 URL', { url }, 200);
+});
+
 export const refreshToken = asyncHandler(async (req, res) => {
   const { token: newToken } = await authService.refreshToken(req.user!);
   return successResponse(res, '토큰 갱신 성공', { token: newToken }, 200);
