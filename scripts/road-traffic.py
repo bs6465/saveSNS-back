@@ -86,7 +86,11 @@ async def fetch_road_traffic(client):
     params = {
         'apiKey': ITS_API_KEY,
         'type': 'all',
-        'getType': 'json'
+        'getType': 'json',
+        'minX': '124.5',
+        'maxX': '132.0',
+        'minY': '33.0',
+        'maxY': '38.6',
     }
 
     masked_key = ITS_API_KEY[:6] + '***' + ITS_API_KEY[-4:] if len(ITS_API_KEY) > 10 else '***'
