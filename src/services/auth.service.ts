@@ -8,6 +8,7 @@ import { ConflictError, UnauthorizedError } from '../errors/AppError.ts';
 */
 
 const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY ?? '';
+const KAKAO_CLIENT_SECRET = process.env.KAKAO_CLIENT_SECRET ?? '';
 const KAKAO_REDIRECT_URI = 'https://api.save-sns.com/api/auth/kakao/callback';
 
 if (!KAKAO_REST_API_KEY) {
@@ -160,6 +161,7 @@ export const handleKakaoCallback = async (code: string): Promise<AuthResult> => 
     body: new URLSearchParams({
       grant_type: 'authorization_code',
       client_id: KAKAO_REST_API_KEY,
+      client_secret: KAKAO_CLIENT_SECRET,
       redirect_uri: KAKAO_REDIRECT_URI,
       code,
     }).toString(),

@@ -94,6 +94,11 @@ spec:
                 secretKeyRef:
                   name: backend-secret
                   key: KAKAO_REST_API_KEY
+            - name: KAKAO_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: KAKAO_CLIENT_SECRET
 
             - name: AWS_S3_BUCKET_NAME
               valueFrom:
