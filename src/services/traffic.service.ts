@@ -37,9 +37,9 @@ interface TrafficStatusRow {
 
 function getStatusFromSpeed(speed: number | null): number {
   if (speed === null) return 1;
-  if (speed >= 30) return 1;  // 원활
-  if (speed >= 15) return 2;  // 서행
-  return 3;                    // 정체
+  if (speed >= 30) return 1; // 원활
+  if (speed >= 15) return 2; // 서행
+  return 3; // 정체
 }
 
 export const getIncidentsByUserId = async (
