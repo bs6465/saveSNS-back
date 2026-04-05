@@ -10,6 +10,12 @@ import { ConflictError, UnauthorizedError } from '../errors/AppError.ts';
 const KAKAO_REST_API_KEY = process.env.KAKAO_REST_API_KEY ?? '';
 const KAKAO_REDIRECT_URI = 'https://api.save-sns.com/api/auth/kakao/callback';
 
+if (!KAKAO_REST_API_KEY) {
+  logger.warn('KAKAO_REST_API_KEY is not set!');
+} else {
+  logger.info(`KAKAO_REST_API_KEY loaded (length: ${KAKAO_REST_API_KEY.length})`);
+}
+
 interface AuthResult {
   token: string;
 }

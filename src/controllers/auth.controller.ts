@@ -1,6 +1,7 @@
 import * as authService from '../services/auth.service.ts';
 import { successResponse } from '../utils/response.utils.ts';
 import { asyncHandler } from '../middleware/asyncHandler.ts';
+import logger from '../config/logger.ts';
 
 export const googleLogin = asyncHandler(async (req, res) => {
   const { idToken } = req.body;
@@ -16,15 +17,19 @@ export const kakaoLogin = asyncHandler(async (req, res) => {
 
 // 카카오 인가 코드 콜백 → JWT 발급 후 앱으로 딥링크 redirect
 export const kakaoCallback = asyncHandler(async (req, res) => {
+  logger.info({ query: req.query }, 'Kakao callback received');
   const code = req.query.code as string;
   if (!code) {
+    logger.warn('Kakao callback: no code in query');
     return res.redirect('savesns://auth/kakao/callback?error=no_code');
   }
 
   try {
     const { token } = await authService.handleKakaoCallback(code);
+    logger.info('Kakao callback: login success');
     return res.redirect(`savesns://auth/kakao/callback?token=${token}`);
-  } catch {
+  } catch (err) {
+    logger.error({ err }, 'Kakao callback: auth failed');
     return res.redirect('savesns://auth/kakao/callback?error=auth_failed');
   }
 });
