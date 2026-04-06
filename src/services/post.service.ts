@@ -93,6 +93,8 @@ export const getPosts = async (
         p.user_id AS "userId",
         u.nickname,
         p.contents,
+        p.longitude,
+        p.latitude,
         p.created_at AS "createdAt",
         ST_Distance(
           p.location::geography,
@@ -136,6 +138,8 @@ export const getPosts = async (
       p.user_id AS "userId",
       u.nickname,
       p.contents,
+      p.longitude,
+      p.latitude,
       p.created_at AS "createdAt",
       ST_Distance(
         p.location::geography,
