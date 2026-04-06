@@ -130,6 +130,49 @@ spec:
 apiVersion: batch/v1
 kind: CronJob
 metadata:
+  name: shelter
+spec:
+  schedule: '0 6 * * *' # 매일 오전 6시
+  revisionHistoryLimit: 1
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: shelter
+              image: bs6465/savesns-script-shelter:latest
+              imagePullPolicy: Always
+
+              envFrom:
+                - configMapRef:
+                    name: backend-config
+
+              env:
+                - name: SHELTER_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: SHELTER_API_KEY
+
+                - name: DB_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: DB_USER
+                - name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: DB_PASSWORD
+
+          restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
   name: local-news
 spec:
   schedule: '0 */4 * * *' # 4시간마다
