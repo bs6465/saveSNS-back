@@ -24,6 +24,26 @@ if (!KAKAO_REST_API_KEY) {
   logger.info(`KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI}`);
 }
 
+// OAuth state 파라미터에서 앱 redirect URI 추출
+const ALLOWED_REDIRECT_SCHEMES = ['exp://', 'savesns://'];
+
+export function parseAppRedirectFromState(state?: string): string | null {
+  if (!state) return null;
+  try {
+    const parsed = JSON.parse(Buffer.from(state, 'base64url').toString()) as { redirect?: string };
+    const redirect = parsed.redirect;
+    if (!redirect) return null;
+    // open redirect 방지: 허용된 스킴만 허용
+    if (!ALLOWED_REDIRECT_SCHEMES.some((scheme) => redirect.startsWith(scheme))) {
+      logger.warn({ redirect }, 'Rejected app redirect with disallowed scheme');
+      return null;
+    }
+    return redirect;
+  } catch {
+    return null;
+  }
+}
+
 interface AuthResult {
   token: string;
 }
@@ -197,8 +217,11 @@ export const handleKakaoCallback = async (code: string): Promise<AuthResult> => 
   return findOrCreateUser('kakao', userInfo);
 };
 
-export const getKakaoAuthUrl = (): string => {
-  return `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_REST_API_KEY}&redirect_uri=${encodeURIComponent(KAKAO_REDIRECT_URI)}&response_type=code`;
+export const getKakaoAuthUrl = (appRedirect?: string): string => {
+  const state = appRedirect ? Buffer.from(JSON.stringify({ redirect: appRedirect })).toString('base64url') : '';
+  let url = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_REST_API_KEY}&redirect_uri=${encodeURIComponent(KAKAO_REDIRECT_URI)}&response_type=code`;
+  if (state) url += `&state=${state}`;
+  return url;
 };
 
 // ─── Google 콜백 (인가 코드 → JWT) ────────────────
@@ -235,8 +258,11 @@ export const handleGoogleCallback = async (code: string): Promise<AuthResult> =>
   return findOrCreateUser('google', userInfo);
 };
 
-export const getGoogleAuthUrl = (): string => {
-  return `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(GOOGLE_REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent('openid email profile')}&access_type=offline&prompt=consent`;
+export const getGoogleAuthUrl = (appRedirect?: string): string => {
+  const state = appRedirect ? Buffer.from(JSON.stringify({ redirect: appRedirect })).toString('base64url') : '';
+  let url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(GOOGLE_REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent('openid email profile')}&access_type=offline&prompt=consent`;
+  if (state) url += `&state=${state}`;
+  return url;
 };
 
 export const refreshToken = async (oldToken: {

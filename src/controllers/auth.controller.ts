@@ -3,6 +3,21 @@ import { successResponse } from '../utils/response.utils.ts';
 import { asyncHandler } from '../middleware/asyncHandler.ts';
 import logger from '../config/logger.ts';
 
+// state에서 앱 redirect URI를 추출하거나 fallback HTML 페이지로
+function buildRedirectUrl(
+  appRedirect: string | null,
+  params: Record<string, string>,
+): string {
+  const qs = new URLSearchParams(params).toString();
+  if (appRedirect) {
+    // 커스텀 스킴으로 리다이렉트 (exp:// 또는 savesns://)
+    const separator = appRedirect.includes('?') ? '&' : '?';
+    return `${appRedirect}${separator}${qs}`;
+  }
+  // fallback: HTTPS 성공 페이지 (브라우저에서 직접 접속한 경우)
+  return `https://api.save-sns.com/api/auth/success?${qs}`;
+}
+
 export const googleLogin = asyncHandler(async (req, res) => {
   const { idToken } = req.body;
   const { token } = await authService.authenticateWithGoogle(idToken);
@@ -15,61 +30,69 @@ export const kakaoLogin = asyncHandler(async (req, res) => {
   return successResponse(res, '카카오 로그인 성공', { token }, 200);
 });
 
-// 카카오 인가 코드 콜백 → JWT 발급 후 앱으로 HTTPS redirect
+// 카카오 인가 코드 콜백 → JWT 발급 후 앱으로 커스텀 스킴 redirect
 export const kakaoCallback = asyncHandler(async (req, res) => {
   logger.info({ query: req.query }, 'Kakao callback received');
   const code = req.query.code as string;
+  const state = req.query.state as string | undefined;
+  const appRedirect = authService.parseAppRedirectFromState(state);
+
   if (!code) {
     logger.warn('Kakao callback: no code in query');
-    return res.redirect('https://api.save-sns.com/api/auth/success?error=no_code&provider=kakao');
+    return res.redirect(buildRedirectUrl(appRedirect, { error: 'no_code', provider: 'kakao' }));
   }
 
   try {
     const { token } = await authService.handleKakaoCallback(code);
     logger.info('Kakao callback: login success');
-    return res.redirect(`https://api.save-sns.com/api/auth/success?token=${token}&provider=kakao`);
+    return res.redirect(buildRedirectUrl(appRedirect, { token, provider: 'kakao' }));
   } catch (err) {
     logger.error({ err }, 'Kakao callback: auth failed');
-    return res.redirect('https://api.save-sns.com/api/auth/success?error=auth_failed&provider=kakao');
+    return res.redirect(buildRedirectUrl(appRedirect, { error: 'auth_failed', provider: 'kakao' }));
   }
 });
 
 // 카카오 인증 URL 반환 (앱에서 직접 열기)
-export const kakaoAuthUrl = asyncHandler(async (_req, res) => {
-  const url = authService.getKakaoAuthUrl();
+export const kakaoAuthUrl = asyncHandler(async (req, res) => {
+  const appRedirect = req.query.app_redirect as string | undefined;
+  const url = authService.getKakaoAuthUrl(appRedirect);
   return successResponse(res, '카카오 인증 URL', { url }, 200);
 });
 
-// Google 인가 코드 콜백 → JWT 발급 후 앱으로 HTTPS redirect
+// Google 인가 코드 콜백 → JWT 발급 후 앱으로 커스텀 스킴 redirect
 export const googleCallback = asyncHandler(async (req, res) => {
   logger.info({ query: req.query }, 'Google callback received');
   const code = req.query.code as string;
+  const state = req.query.state as string | undefined;
+  const appRedirect = authService.parseAppRedirectFromState(state);
+
   if (!code) {
     logger.warn('Google callback: no code in query');
-    return res.redirect('https://api.save-sns.com/api/auth/success?error=no_code&provider=google');
+    return res.redirect(buildRedirectUrl(appRedirect, { error: 'no_code', provider: 'google' }));
   }
 
   try {
     const { token } = await authService.handleGoogleCallback(code);
     logger.info('Google callback: login success');
-    return res.redirect(`https://api.save-sns.com/api/auth/success?token=${token}&provider=google`);
+    return res.redirect(buildRedirectUrl(appRedirect, { token, provider: 'google' }));
   } catch (err) {
     logger.error({ err }, 'Google callback: auth failed');
-    return res.redirect('https://api.save-sns.com/api/auth/success?error=auth_failed&provider=google');
+    return res.redirect(buildRedirectUrl(appRedirect, { error: 'auth_failed', provider: 'google' }));
   }
 });
 
 // Google 인증 URL 반환
-export const googleAuthUrl = asyncHandler(async (_req, res) => {
-  const url = authService.getGoogleAuthUrl();
+export const googleAuthUrl = asyncHandler(async (req, res) => {
+  const appRedirect = req.query.app_redirect as string | undefined;
+  const url = authService.getGoogleAuthUrl(appRedirect);
   return successResponse(res, 'Google 인증 URL', { url }, 200);
 });
 
 // OAuth 성공 페이지 (openAuthSessionAsync가 감지 못한 경우 fallback)
 export const authSuccess = asyncHandler(async (req, res) => {
-  const token = req.query.token as string ?? '';
-  const error = req.query.error as string ?? '';
-  const provider = req.query.provider as string ?? '';
+  const token = (req.query.token as string) ?? '';
+  const error = (req.query.error as string) ?? '';
+  const provider = (req.query.provider as string) ?? '';
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   return res.send(`<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SaveSNS 로그인</title>
