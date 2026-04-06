@@ -7,11 +7,11 @@ import os
 대피소 데이터 수집 스크립트
 재난안전데이터공유플랫폼 지진 대피장소 API (DSSP-IF-00706)를 호출하여 대피소 데이터를 DB에 저장
 API: https://www.safetydata.go.kr/disaster-data/view?dataSn=686
-환경 변수: DISASTER_API_KEY, DB_USER, DB_NAME, DB_PASSWORD, DB_HOST, DB_PORT
+환경 변수: SHELTER_API_KEY, DB_USER, DB_NAME, DB_PASSWORD, DB_HOST, DB_PORT
 DB 테이블: shelter
 """
 
-DISASTER_API_KEY = os.getenv('DISASTER_API_KEY', '').strip()
+SHELTER_API_KEY = os.getenv('SHELTER_API_KEY', '').strip()
 
 DB_USER = os.getenv('DB_USER')
 DB_NAME = os.getenv('DB_NAME')
@@ -45,7 +45,7 @@ def safe_int(value):
 async def fetch_shelters(client, page_no=1, num_of_rows=1000):
     """대피소 데이터 조회"""
     params = {
-        'serviceKey': DISASTER_API_KEY,
+        'serviceKey': SHELTER_API_KEY,
         'returnType': 'json',
         'pageNo': str(page_no),
         'numOfRows': str(num_of_rows),
@@ -146,8 +146,8 @@ async def fetch_all_shelters(client):
 
 
 async def main():
-    if not DISASTER_API_KEY:
-        print("Error: DISASTER_API_KEY environment variable not set")
+    if not SHELTER_API_KEY:
+        print("Error: SHELTER_API_KEY environment variable not set")
         return
 
     try:
