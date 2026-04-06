@@ -218,7 +218,9 @@ export const handleKakaoCallback = async (code: string): Promise<AuthResult> => 
 };
 
 export const getKakaoAuthUrl = (appRedirect?: string): string => {
-  const state = appRedirect ? Buffer.from(JSON.stringify({ redirect: appRedirect })).toString('base64url') : '';
+  const state = appRedirect
+    ? Buffer.from(JSON.stringify({ redirect: appRedirect })).toString('base64url')
+    : '';
   let url = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_REST_API_KEY}&redirect_uri=${encodeURIComponent(KAKAO_REDIRECT_URI)}&response_type=code`;
   if (state) url += `&state=${state}`;
   return url;
@@ -259,7 +261,9 @@ export const handleGoogleCallback = async (code: string): Promise<AuthResult> =>
 };
 
 export const getGoogleAuthUrl = (appRedirect?: string): string => {
-  const state = appRedirect ? Buffer.from(JSON.stringify({ redirect: appRedirect })).toString('base64url') : '';
+  const state = appRedirect
+    ? Buffer.from(JSON.stringify({ redirect: appRedirect })).toString('base64url')
+    : '';
   let url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(GOOGLE_REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent('openid email profile')}&access_type=offline&prompt=consent`;
   if (state) url += `&state=${state}`;
   return url;

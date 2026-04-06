@@ -20,7 +20,10 @@ export const deactivatePushToken = asyncHandler(async (req, res) => {
 
 export const getNotifications = asyncHandler(async (req, res) => {
   const { userId } = req.user!;
-  const { limit, offset } = req.query as { limit?: number; offset?: number };
+  const { limit, offset } = (req.validatedQuery ?? req.query) as {
+    limit?: number;
+    offset?: number;
+  };
 
   const notifications = await notificationService.getNotificationsByUserId(
     userId,

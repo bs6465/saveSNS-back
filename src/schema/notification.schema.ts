@@ -18,14 +18,10 @@ export const deactivatePushTokenSchema = z.object({
 });
 
 export const getNotificationsSchema = z.object({
-  query: z.object({
-    limit: z.coerce.number().int().min(1).max(100).default(50),
-    offset: z.coerce.number().int().min(0).default(0),
-  }),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
 });
 
 export const notificationIdSchema = z.object({
-  params: z.object({
-    notificationId: z.string().uuid('유효하지 않은 알림 ID입니다'),
-  }),
+  notificationId: z.string().uuid('유효하지 않은 알림 ID입니다'),
 });

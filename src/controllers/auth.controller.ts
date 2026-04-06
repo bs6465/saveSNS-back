@@ -4,10 +4,7 @@ import { asyncHandler } from '../middleware/asyncHandler.ts';
 import logger from '../config/logger.ts';
 
 // state에서 앱 redirect URI를 추출하거나 fallback HTML 페이지로
-function buildRedirectUrl(
-  appRedirect: string | null,
-  params: Record<string, string>,
-): string {
+function buildRedirectUrl(appRedirect: string | null, params: Record<string, string>): string {
   const qs = new URLSearchParams(params).toString();
   if (appRedirect) {
     // 커스텀 스킴으로 리다이렉트 (exp:// 또는 savesns://)
@@ -77,7 +74,9 @@ export const googleCallback = asyncHandler(async (req, res) => {
     return res.redirect(buildRedirectUrl(appRedirect, { token, provider: 'google' }));
   } catch (err) {
     logger.error({ err }, 'Google callback: auth failed');
-    return res.redirect(buildRedirectUrl(appRedirect, { error: 'auth_failed', provider: 'google' }));
+    return res.redirect(
+      buildRedirectUrl(appRedirect, { error: 'auth_failed', provider: 'google' }),
+    );
   }
 });
 
