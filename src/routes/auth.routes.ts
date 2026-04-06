@@ -69,6 +69,9 @@ router.get('/google/callback', authController.googleCallback);
 // Google 인증 URL 조회 (앱에서 WebBrowser로 열기)
 router.get('/google/auth-url', authController.googleAuthUrl);
 
+// OAuth 성공 페이지 (openAuthSessionAsync가 감지하는 HTTPS URL)
+router.get('/success', authController.authSuccess);
+
 // ─── 토큰 관리 (Protected) ─────────────────────
 
 /**
