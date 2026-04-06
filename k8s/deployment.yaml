@@ -99,6 +99,11 @@ spec:
                 secretKeyRef:
                   name: backend-secret
                   key: KAKAO_CLIENT_SECRET
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: GOOGLE_CLIENT_SECRET
 
             - name: AWS_S3_BUCKET_NAME
               valueFrom:
