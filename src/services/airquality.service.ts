@@ -87,12 +87,54 @@ export const getAirQualityByUserId = async (userId: string): Promise<AirQualityD
       aq.data_time AS "dataTime"
     FROM users_location ul
     JOIN sig s ON ST_Contains(s.geom, ul.location)
-    JOIN air_quality aq ON aq.sido_name = s.sido_nm
+    JOIN air_quality aq ON aq.sido_name = (
+      CASE
+        WHEN s.sido_nm LIKE '서울%' THEN '서울'
+        WHEN s.sido_nm LIKE '부산%' THEN '부산'
+        WHEN s.sido_nm LIKE '대구%' THEN '대구'
+        WHEN s.sido_nm LIKE '인천%' THEN '인천'
+        WHEN s.sido_nm LIKE '광주%' THEN '광주'
+        WHEN s.sido_nm LIKE '대전%' THEN '대전'
+        WHEN s.sido_nm LIKE '울산%' THEN '울산'
+        WHEN s.sido_nm LIKE '세종%' THEN '세종'
+        WHEN s.sido_nm LIKE '경기%' THEN '경기'
+        WHEN s.sido_nm LIKE '강원%' THEN '강원'
+        WHEN s.sido_nm = '충청북도' THEN '충북'
+        WHEN s.sido_nm = '충청남도' THEN '충남'
+        WHEN s.sido_nm = '전라북도' THEN '전북'
+        WHEN s.sido_nm = '전라남도' THEN '전남'
+        WHEN s.sido_nm = '경상북도' THEN '경북'
+        WHEN s.sido_nm = '경상남도' THEN '경남'
+        WHEN s.sido_nm LIKE '제주%' THEN '제주'
+        ELSE LEFT(s.sido_nm, 2)
+      END
+    )
     WHERE ul.user_id = ${userId}::uuid
       AND aq.data_time = (
         SELECT MAX(data_time)
         FROM air_quality
-        WHERE sido_name = s.sido_nm
+        WHERE sido_name = (
+          CASE
+            WHEN s.sido_nm LIKE '서울%' THEN '서울'
+            WHEN s.sido_nm LIKE '부산%' THEN '부산'
+            WHEN s.sido_nm LIKE '대구%' THEN '대구'
+            WHEN s.sido_nm LIKE '인천%' THEN '인천'
+            WHEN s.sido_nm LIKE '광주%' THEN '광주'
+            WHEN s.sido_nm LIKE '대전%' THEN '대전'
+            WHEN s.sido_nm LIKE '울산%' THEN '울산'
+            WHEN s.sido_nm LIKE '세종%' THEN '세종'
+            WHEN s.sido_nm LIKE '경기%' THEN '경기'
+            WHEN s.sido_nm LIKE '강원%' THEN '강원'
+            WHEN s.sido_nm = '충청북도' THEN '충북'
+            WHEN s.sido_nm = '충청남도' THEN '충남'
+            WHEN s.sido_nm = '전라북도' THEN '전북'
+            WHEN s.sido_nm = '전라남도' THEN '전남'
+            WHEN s.sido_nm = '경상북도' THEN '경북'
+            WHEN s.sido_nm = '경상남도' THEN '경남'
+            WHEN s.sido_nm LIKE '제주%' THEN '제주'
+            ELSE LEFT(s.sido_nm, 2)
+          END
+        )
       )
     LIMIT 1
   `;
