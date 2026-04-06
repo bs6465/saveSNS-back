@@ -235,16 +235,16 @@ export const getUrgencyReports = async (
 ) => {
   const reports = await prisma.$queryRaw`
     SELECT
-      ur.urgency_report_id AS "reportId",
-      ur.post_id AS "postId",
+      ur."urgencyReportId" AS "reportId",
+      ur."postId",
       ur.score,
       ur.level,
       ur.category,
-      ur.matched_keywords AS "matchedKeywords",
+      ur."matchedKeywords",
       ur.confidence,
-      ur.is_confirmed AS "isConfirmed",
-      ur.report_count AS "reportCount",
-      ur.created_at AS "createdAt",
+      ur."isConfirmed",
+      ur."reportCount",
+      ur."createdAt",
       p.contents,
       p.longitude,
       p.latitude,
@@ -254,15 +254,15 @@ export const getUrgencyReports = async (
         ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography
       ) AS distance
     FROM urgency_report ur
-    JOIN posts p ON p.post_id = ur.post_id
-    JOIN users_account u ON u.user_id = ur.user_id
-    WHERE ur.created_at > NOW() - INTERVAL '24 hours'
+    JOIN posts p ON p.post_id = ur."postId"
+    JOIN users_account u ON u.user_id = ur."userId"
+    WHERE ur."createdAt" > NOW() - INTERVAL '24 hours'
       AND ST_DWithin(
         ST_SetSRID(ST_MakePoint(ur.longitude, ur.latitude), 4326)::geography,
         ST_SetSRID(ST_MakePoint(${longitude}, ${latitude}), 4326)::geography,
         ${radiusMeters}
       )
-    ORDER BY ur.score DESC, ur.created_at DESC
+    ORDER BY ur.score DESC, ur."createdAt" DESC
     LIMIT ${limit}
   `;
 
