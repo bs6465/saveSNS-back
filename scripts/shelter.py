@@ -9,6 +9,7 @@ import os
 API: https://www.safetydata.go.kr/disaster-data/view?dataSn=686
 환경 변수: SHELTER_API_KEY, DB_USER, DB_NAME, DB_PASSWORD, DB_HOST, DB_PORT
 DB 테이블: shelter
+스케줄: 매일 오전 6시 (K8s CronJob)
 """
 
 SHELTER_API_KEY = os.getenv('SHELTER_API_KEY', '').strip()
