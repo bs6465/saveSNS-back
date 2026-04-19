@@ -11,7 +11,7 @@ API: https://www.safetydata.go.kr/disaster-data/view?dataSn=686
 DB 테이블: shelter
 스케줄: 매일 오전 6시 (K8s CronJob)
 """
-
+ 
 SHELTER_API_KEY = os.getenv('SHELTER_API_KEY', '').strip()
 
 DB_USER = os.getenv('DB_USER')
