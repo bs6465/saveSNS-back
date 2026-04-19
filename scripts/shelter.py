@@ -11,7 +11,7 @@ API: https://www.safetydata.go.kr/disaster-data/view?dataSn=686
 DB 테이블: shelter
 스케줄: 매일 오전 6시 (K8s CronJob)
 """
- 
+
 SHELTER_API_KEY = os.getenv('SHELTER_API_KEY', '').strip()
 
 DB_USER = os.getenv('DB_USER')
@@ -169,13 +169,13 @@ async def main():
 
             # name + address를 고유 키로 사용하여 중복 방지
             # 기존 데이터를 먼저 삭제하고 새로 삽입 (full refresh)
-            await conn.execute("DELETE FROM shelter WHERE \"shelterType\" = 'earthquake'")
+            await conn.execute("DELETE FROM shelter WHERE shelter_type = 'earthquake'")
 
             query = """
                 INSERT INTO shelter (
-                    name, address, "shelterType",
+                    name, address, shelter_type,
                     longitude, latitude, capacity, phone,
-                    "sidoName", "sigunguName", "updatedAt"
+                    sido_name, sigungu_name, updated_at
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
             """
 
