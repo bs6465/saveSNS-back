@@ -14,7 +14,7 @@ spec:
         spec:
           containers:
             - name: air-quality
-              image: bs6465/savesns-script-air-quality:33059485c73ebc9b7ddc91117c68da3a052e4000
+              image: bs6465/savesns-script-air-quality:46b6f072652b360014facb17ef3282b1ecc5cc2e
               imagePullPolicy: Always
 
               envFrom:
@@ -57,7 +57,7 @@ spec:
         spec:
           containers:
             - name: disaster-alert
-              image: bs6465/savesns-script-disaster-alert:33059485c73ebc9b7ddc91117c68da3a052e4000
+              image: bs6465/savesns-script-disaster-alert:46b6f072652b360014facb17ef3282b1ecc5cc2e
               imagePullPolicy: Always
 
               envFrom:
@@ -100,7 +100,7 @@ spec:
         spec:
           containers:
             - name: traffic-incidents
-              image: bs6465/savesns-script-traffic-incidents:33059485c73ebc9b7ddc91117c68da3a052e4000
+              image: bs6465/savesns-script-traffic-incidents:46b6f072652b360014facb17ef3282b1ecc5cc2e
               imagePullPolicy: Always
 
               envFrom:
@@ -143,7 +143,7 @@ spec:
         spec:
           containers:
             - name: shelter
-              image: bs6465/savesns-script-shelter:33059485c73ebc9b7ddc91117c68da3a052e4000
+              image: bs6465/savesns-script-shelter:46b6f072652b360014facb17ef3282b1ecc5cc2e
               imagePullPolicy: Always
 
               envFrom:
@@ -186,7 +186,7 @@ spec:
         spec:
           containers:
             - name: local-news
-              image: bs6465/savesns-script-local-news:33059485c73ebc9b7ddc91117c68da3a052e4000
+              image: bs6465/savesns-script-local-news:46b6f072652b360014facb17ef3282b1ecc5cc2e
               imagePullPolicy: Always
 
               envFrom:
