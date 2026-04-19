@@ -53,7 +53,16 @@ async def fetch_shelters(client, page_no=1, num_of_rows=1000):
     }
 
     try:
-        response = await client.get(API_URL, params=params, timeout=30.0)
+        for attempt in range(3):
+            try:
+                response = await client.get(API_URL, params=params, timeout=30.0)
+                break
+            except (httpx.ConnectError, httpx.TimeoutException) as e:
+                if attempt == 2:
+                    raise
+                print(f"Connection error (attempt {attempt + 1}/3): {e}, retrying...")
+                await asyncio.sleep(3 * (attempt + 1))
+
         if response.status_code != 200:
             print(f"Error: HTTP {response.status_code}")
             print(f"Response: {response.text[:500]}")
