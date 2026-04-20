@@ -46,7 +46,7 @@ app.use(
     crossOriginEmbedderPolicy: false,
   }),
 );
-
+ 
 // CORS 설정 - 허용된 origin만 접근 가능
 const corsOptions: cors.CorsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
