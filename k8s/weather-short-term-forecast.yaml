@@ -16,7 +16,7 @@ spec:
         spec:
           containers:
             - name: weather-short-term-forecast
-              image: bs6465/savesns-script-weather-short:1ace0b8b861e92a8bd734c0a6600b53066138f2b
+              image: bs6465/savesns-script-weather-short:77a45019d2d2a946304b829039873d4ee36c5ebb
               imagePullPolicy: Always
 
               # [편의성] DB 접속 정보도 똑같이 가져옴 (코드 재사용)
