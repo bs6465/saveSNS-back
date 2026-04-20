@@ -7,7 +7,7 @@ spec:
   revisionHistoryLimit: 1
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 1
-  
+
   jobTemplate:
     spec:
       template:
@@ -151,11 +151,21 @@ spec:
                     name: backend-config
 
               env:
-                - name: SHELTER_API_KEY
+                - name: EARTHQUAKE_API_KEY
                   valueFrom:
                     secretKeyRef:
                       name: backend-secret
-                      key: SHELTER_API_KEY
+                      key: EARTHQUAKE_API_KEY
+                - name: INTEGRATED_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: INTEGRATED_API_KEY
+                - name: CIVIL_DEFENSE_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: backend-secret
+                      key: CIVIL_DEFENSE_API_KEY
 
                 - name: DB_USER
                   valueFrom:

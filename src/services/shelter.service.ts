@@ -26,7 +26,9 @@ export const getNearbyShelters = async (
   shelterType: string | null = null,
   limit: number = 50,
 ): Promise<ShelterResult[]> => {
-  const typeFilter = shelterType ? `AND s.shelter_type = '${shelterType}'` : '';
+  const typeFilter = shelterType ? 'AND s.shelter_type = $5' : '';
+  const params: (number | string)[] = [longitude, latitude, radiusMeters, limit];
+  if (shelterType) params.push(shelterType);
 
   const shelters = await prisma.$queryRawUnsafe<ShelterResult[]>(
     `
@@ -55,10 +57,7 @@ export const getNearbyShelters = async (
     ORDER BY distance ASC
     LIMIT $4
   `,
-    longitude,
-    latitude,
-    radiusMeters,
-    limit,
+    ...params,
   );
 
   logger.info({ count: shelters.length, radiusMeters, shelterType }, 'Nearby shelters retrieved');
