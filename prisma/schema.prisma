@@ -414,18 +414,18 @@ view weather_ultra_by_user_id {
 
 /// 대피소 정보 모델 (민방위, 지진, 수해 대피소)
 model shelter {
-  shelterId   String  @id(map: "shelter_pk") @default(dbgenerated("uuidv7()")) @db.Uuid
+  shelterId   String  @id(map: "shelter_pk") @default(dbgenerated("uuidv7()")) @map("shelter_id") @db.Uuid
   name        String  @db.VarChar(200)         // 시설명
   address     String  @db.VarChar(300)         // 주소
-  shelterType String  @db.VarChar(50)          // civil_defense, earthquake, flood
+  shelterType String  @map("shelter_type") @db.VarChar(50)          // civil_defense, earthquake, flood
   longitude   Float
   latitude    Float
   capacity    Int?                              // 수용 인원
   phone       String? @db.VarChar(50)          // 연락처
-  sidoName    String? @db.VarChar(40)          // 시도명
-  sigunguName String? @db.VarChar(40)          // 시군구명
-  createdAt   DateTime @default(now()) @db.Timestamp(6)
-  updatedAt   DateTime? @db.Timestamp(6)
+  sidoName    String? @map("sido_name") @db.VarChar(40)          // 시도명
+  sigunguName String? @map("sigungu_name") @db.VarChar(40)          // 시군구명
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime? @map("updated_at") @db.Timestamp(6)
 
   @@index([shelterType, sidoName], map: "idx_shelter_type_sido")
   @@index([latitude, longitude], map: "idx_shelter_location")
