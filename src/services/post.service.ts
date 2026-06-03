@@ -21,12 +21,19 @@ interface PostListResult {
   hasMore: boolean;
 }
 
+interface MediaFileInput {
+  link: string;
+  thumbnailLink?: string | null;
+  type: 'image' | 'video';
+}
+
 export const createPost = async (
   userId: string,
   contents: string,
   longitude: number,
   latitude: number,
   mediaUrls: string[] = [],
+  mediaFiles: MediaFileInput[] = [],
 ): Promise<{ postId: string }> => {
   const post = await prisma.posts.create({
     data: {
@@ -41,17 +48,26 @@ export const createPost = async (
   });
   logger.info(`Post created: postId:${post.post_id} by userId:${userId}`);
 
-  if (mediaUrls && mediaUrls.length > 0) {
-    const mediaData = mediaUrls.map((url) => ({
+  const mediaData: Prisma.media_storageCreateManyInput[] = [
+    ...(mediaUrls || []).map((url) => ({
       post_id: post.post_id,
       link: url,
+      thumbnail_link: null,
       type: 'image',
-    }));
+    })),
+    ...(mediaFiles || []).map((file) => ({
+      post_id: post.post_id,
+      link: file.link,
+      thumbnail_link: file.thumbnailLink ?? null,
+      type: file.type,
+    })),
+  ];
 
+  if (mediaData.length > 0) {
     await prisma.media_storage.createMany({
       data: mediaData,
     });
-    logger.info(`Media saved: ${mediaUrls.length} files for postId:${post.post_id}`);
+    logger.info(`Media saved: ${mediaData.length} files for postId:${post.post_id}`);
   }
 
   await deleteCacheByPrefix('posts:');
@@ -108,6 +124,7 @@ export const getPosts = async (
               json_build_object(
                 'mediaId', ms.media_id,
                 'link', ms.link,
+                'thumbnailLink', ms.thumbnail_link,
                 'type', ms.type
               ) ORDER BY ms.created_at ASC
             )

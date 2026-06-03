@@ -25,6 +25,53 @@ describe('post.schema', () => {
       expect(result.success).toBe(true);
     });
 
+    it('미디어 파일 메타데이터를 포함할 수 있다', () => {
+      const data = {
+        contents: '영상 게시글',
+        longitude: 127.0,
+        latitude: 37.5,
+        mediaFiles: [
+          {
+            link: 'https://example.com/video.mp4',
+            thumbnailLink: null,
+            type: 'video',
+          },
+        ],
+      };
+      const result = createPostSchema.safeParse(data);
+      expect(result.success).toBe(true);
+    });
+
+    it('잘못된 미디어 타입을 거부한다', () => {
+      const data = {
+        contents: '잘못된 게시글',
+        longitude: 127.0,
+        latitude: 37.5,
+        mediaFiles: [
+          {
+            link: 'https://example.com/file.bin',
+            type: 'binary',
+          },
+        ],
+      };
+      const result = createPostSchema.safeParse(data);
+      expect(result.success).toBe(false);
+    });
+
+    it('미디어 파일은 최대 5개까지 허용한다', () => {
+      const data = {
+        contents: '첨부 많은 게시글',
+        longitude: 127.0,
+        latitude: 37.5,
+        mediaFiles: Array.from({ length: 6 }, (_, index) => ({
+          link: `https://example.com/${index}.jpg`,
+          type: 'image',
+        })),
+      };
+      const result = createPostSchema.safeParse(data);
+      expect(result.success).toBe(false);
+    });
+
     it('빈 내용을 거부한다', () => {
       const data = { contents: '', longitude: 127.0, latitude: 37.5 };
       const result = createPostSchema.safeParse(data);
@@ -54,6 +101,7 @@ describe('post.schema', () => {
       const data = { contents: '테스트', longitude: 127.0, latitude: 37.5 };
       const result = createPostSchema.safeParse(data);
       expect(result.data.mediaUrls).toEqual([]);
+      expect(result.data.mediaFiles).toEqual([]);
     });
   });
 

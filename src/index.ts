@@ -95,7 +95,7 @@ const authLimiter = rateLimit({
 });
 
 // JSON 파싱 (Base64 이미지 업로드용 크기 증가)
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: '80mb' }));
 
 // XSS 방어 미들웨어
 app.use(xssSanitizer());

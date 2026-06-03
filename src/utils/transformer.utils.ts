@@ -84,6 +84,7 @@ export const mediaTransformer = {
     return {
       mediaId: media.media_id,
       link: media.link,
+      thumbnailLink: media.thumbnail_link,
       type: media.type,
       createdAt: media.created_at,
     };
@@ -146,7 +147,7 @@ export const selectFields = {
     longitude: true,
     latitude: true,
   },
-  media: { media_id: true, link: true, type: true, created_at: true },
+  media: { media_id: true, link: true, thumbnail_link: true, type: true, created_at: true },
 } as const;
 
 export default {

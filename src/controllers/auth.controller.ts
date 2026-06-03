@@ -120,7 +120,7 @@ export const linkAccount = asyncHandler(async (req, res) => {
 });
 
 export const unlinkAccount = asyncHandler(async (req, res) => {
-  const { provider } = req.params;
+  const provider = String(req.params.provider ?? '');
   await authService.unlinkSocialAccount(req.user!.userId, provider);
   return successResponse(res, '소셜 계정 연동 해제 성공', null, 200);
 });

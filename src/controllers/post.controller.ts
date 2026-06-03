@@ -6,11 +6,18 @@ import { emitToLocation } from '../config/socket.ts';
 
 export const createPost = asyncHandler(async (req, res) => {
   const { userId } = req.user!;
-  const { contents, longitude, latitude, mediaUrls } = req.body;
+  const { contents, longitude, latitude, mediaUrls, mediaFiles } = req.body;
 
-  logger.info({ mediaCount: mediaUrls?.length }, 'Post creation requested');
+  logger.info({ mediaCount: (mediaFiles || mediaUrls || []).length }, 'Post creation requested');
 
-  const data = await postService.createPost(userId, contents, longitude, latitude, mediaUrls);
+  const data = await postService.createPost(
+    userId,
+    contents,
+    longitude,
+    latitude,
+    mediaUrls,
+    mediaFiles,
+  );
 
   // Socket.IO로 위치 기반 새 글 알림 브로드캐스트
   if (longitude && latitude) {

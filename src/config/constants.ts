@@ -32,9 +32,11 @@ export const NOTIFICATION = {
 };
 
 export const FILE_UPLOAD = {
-  maxFileSize: 10 * 1024 * 1024,
+  maxFileSize: 20 * 1024 * 1024,
+  maxTotalSize: 40 * 1024 * 1024,
   allowedImageTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'],
-  maxFilesPerPost: 10,
+  allowedVideoTypes: ['video/mp4', 'video/quicktime', 'video/webm'],
+  maxFilesPerPost: 5,
 };
 
 export const RATE_LIMIT = {

@@ -1,6 +1,6 @@
 {
   "name": "back",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "type": "module",
   "main": "src/index.ts",
@@ -13,7 +13,8 @@
     "test:coverage": "vitest run --coverage",
     "test:integration": "vitest run --include tests/integration",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "demo:seed": "node prisma/demo-seed.js"
   },
   "keywords": [],
   "author": "",
