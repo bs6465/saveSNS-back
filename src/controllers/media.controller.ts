@@ -39,6 +39,8 @@ export const uploadMedia = asyncHandler(async (req, res) => {
     const thumbnailLocation = await uploadFile(thumbnail.buffer, thumbKey, thumbnail.contentType);
 
     return {
+      link: location,
+      thumbnailLink: thumbnailLocation,
       location,
       thumbnailLocation,
       key,
